@@ -1,6 +1,6 @@
 #include "DxLib.h"
 #include "GameTask.h"
-//#include "Player.h"
+#include "Player.h"
 //#include"Enemy.h"
 //#include "Stage.h"
 #include"KeyMng.h"
@@ -12,33 +12,20 @@ constexpr int SCREEN_SIZE_Y(800);
 #define  lpGameTask GameTask::GetInstance();
 
 GameTask *GameTask::s_Instance = nullptr;
-int GameTask::GameUpDate(void)
+int GameTask::GameUpdate(void)
 {
+	int rtn_id;
 	//キー情報更新
 	KeyMng::GetInstance().Update();
 
-	switch (gameMode) {
-	case GAME_INIT:
-		GameInit();
-		break;
-	case GAME_TITLE:
-		GameTitle();
-		break;
-	case GAME_MAIN:
-		GameMain();
-		break;
-	case GAME_RESULT:
-		GameResult();
-		break;
-		return 0;
-	}
+	rtn_id = (this->*GtskPtr)();
+
+	return rtn_id;
 }
 
 GameTask::GameTask()
 {
-	SystemInit();
-
-	gameMode = GAME_INIT;
+	//GtskPtr = &GameTask::SystemInit;
 	oldKey = 0;
 }
 
@@ -64,40 +51,64 @@ int GameTask::SystemInit(void)
 		return -1;
 	}
 	SetDrawScreen(DX_SCREEN_BACK);
+	GtskPtr = &GameTask::GameInit;
 	return 0;
 }
 
+
 int GameTask::GameInit(void)
 {
+	objList.clear();
+
 	DrawString(0, 0, "INIT", 0xffff00);
-	if (KeyMng::GetInstance().trgKey[P1_ENTER])gameMode = GAME_TITLE;
-	ImageMng::GetInstance().SetID("TITLE", "image/タイトル.png");
+	if (KeyMng::GetInstance().trgKey[P1_ENTER])
+	{
+		GtskPtr = &GameTask::GameTitle;
+	}
+	player = AddObjlist(std::make_shared<Player>(lpKeyMng.trgKey,lpKeyMng.oldKey));
+	(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
+	//ImageMng::GetInstance().SetID("TITLE", "image/タイトル.png");
 	return 0;
 }
 
 int GameTask::GameTitle(void)
 {
 	//ゲームモード移行
-	if (KeyMng::GetInstance().trgKey[P1_ENTER])gameMode = GAME_MAIN;
+	if (KeyMng::GetInstance().trgKey[P1_ENTER])
+	{
+		GtskPtr = &GameTask::GameMain;
+	}
 	DrawString(0, 0, "GAME_TITLE", 0xffffff);
 	return 0;
 }
 
 int GameTask::GameMain(void)
 {
-	if (KeyMng::GetInstance().trgKey[P1_ENTER])gameMode = GAME_RESULT;
+	if (KeyMng::GetInstance().trgKey[P1_ENTER])
+	{
+		GtskPtr = &GameTask::GameResult;
+	}
 	DrawString(0, 0, "GAME_MAIN", 0xffffff);
 	return 0;
 }
 
 int GameTask::GameResult(void)
 {
-	if (KeyMng::GetInstance().trgKey[P1_ENTER])gameMode = GAME_INIT;
+	if (KeyMng::GetInstance().trgKey[P1_ENTER])
+	{
+		GtskPtr = &GameTask::GameInit;
+	}
 	DrawString(0, 0, "GameResult", 0xffffff);
 	return 0;
 }
 
-
+std::list<obj_ptr>::iterator GameTask::AddObjlist(obj_ptr && objPtr)
+{
+	objList.push_back(objPtr);
+	auto itr = objList.end();
+	itr--;
+	return itr;
+}
 
 
 

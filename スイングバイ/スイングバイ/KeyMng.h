@@ -13,6 +13,8 @@ enum KEY_CODE {
 	KEY_MAX
 };
 
+#define lpKeyMng KeyMng::GetInstance()
+
 class KeyMng
 {
 private:

@@ -11,9 +11,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	{
 		ClsDrawScreen();
 
-		GameTask::GetInstance().GameUpDate();
+		GameTask::GetInstance().GameUpdate();
 
-+		ScreenFlip();
+		ScreenFlip();
 	}
 	DxLib_End();
 	return 0;

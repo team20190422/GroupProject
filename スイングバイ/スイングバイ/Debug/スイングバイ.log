@@ -1,3 +1,13 @@
 ﻿  GameTask.cpp
-d:\チーム作成\スイングバイ\スイングバイ\gametask.cpp(35): warning C4715: 'GameTask::GameUpDate': 値を返さないコントロール パスがあります。
-  スイングバイ.vcxproj -> D:\チーム作成\スイングバイ\Debug\スイングバイ.exe
+  ImageMng.cpp
+d:\1701313\スイングバイ\スイングバイ\imagemng.cpp(63): warning C4018: '<=': signed と unsigned の数値を比較しようとしました。
+  KeyMng.cpp
+  main.cpp
+d:\1701313\スイングバイ\スイングバイ\main.cpp(16): warning C4552: '+': 演算子にプログラム上の作用がありません。作用を伴う演算子を使用してください
+  VECTOR2.cpp
+  VECTOR3.cpp
+d:\1701313\スイングバイ\スイングバイ\vector3.cpp(160): warning C4244: '=': 'int' から 'float' への変換です。データが失われる可能性があります。
+d:\1701313\スイングバイ\スイングバイ\vector3.cpp(161): warning C4244: '=': 'int' から 'float' への変換です。データが失われる可能性があります。
+  コードを生成中...
+  LINK : 前回のインクリメンタル リンクで D:\1701313\スイングバイ\Debug\スイングバイ.exe が見つからなかったか、ビルドされませんでした。フル リンクを行います。
+  スイングバイ.vcxproj -> D:\1701313\スイングバイ\Debug\スイングバイ.exe

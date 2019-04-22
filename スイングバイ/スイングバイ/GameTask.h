@@ -2,6 +2,7 @@
 #include<vector>
 #include<list>
 #include<map>
+#include "Obj.h"
 
 //class Player;
 //class Stage;
@@ -15,6 +16,11 @@ enum GAME_MODE {
 	GAME_MAIN,
 	GAME_RESULT
 };
+
+typedef std::shared_ptr<Obj> obj_ptr;
+typedef std::list<obj_ptr> obj_List;
+
+
 class GameTask
 {
 private:
@@ -32,7 +38,7 @@ public:
 	}
 
 	int SystemInit(void);
-	int GameUpDate(void);	//ゲームループメイン
+	int GameUpdate(void);	//ゲームループメイン
 
 
 	//char KeyData[256], KeyDataOld[256]; 
@@ -45,15 +51,21 @@ public:
 
 private:
 
+	std::list<obj_ptr>::iterator AddObjlist(obj_ptr && objPtr);
+
 	int GameInit(void);
 	int GameTitle(void);
 	int GameMain(void);
 	int GameResult(void);
 
-	GAME_MODE gameMode;
-	int newKey;
-	int oldKey;
-	int trgKey;
+	int (GameTask::*GtskPtr)(void);
+
+	obj_List objList;
+	std::list<obj_ptr>::iterator player;
+
+
+	// ｷｰ関係
+	int newKey, oldKey , trgKey;
 
 	
 };
