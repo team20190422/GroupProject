@@ -5,7 +5,7 @@
 
 // ΩÀﬂ∞ƒﬁÇÃç≈ëÂíl
 
-constexpr double speedMax = 5.0f;
+constexpr float speedMax = 5.0f;
 class Player :
 	public Obj
 {
@@ -16,7 +16,15 @@ public:
 	void Draw(void);
 	void Update(void);
 
-	double Abstract(double i);
+	float Abstract(float i);
+
+	bool SetPos(VECTOR3 pos);
+	const VECTOR3& GetPos(void);
+
+
+	bool SetAngle(float Angle);
+	const float& GetAngle(void);
+
 private:
 	void SetMove(void);
 
@@ -24,9 +32,9 @@ private:
 	VECTOR3 radianPos = { 0,0 };
 	VECTOR3 vec = { 0,-1 };
 	MATRIX master = { 0 };
-	double Angle = 0;
+	float Angle = 0;
 	float speed = 1.0f;
-	double count = -3.0f;
+	float count = -3.0f;
 
 };
 

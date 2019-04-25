@@ -56,6 +56,17 @@ const VECTOR3 & Obj::GetPos(void)
 	return this->pos;
 }
 
+bool Obj::SetAngle(float Angle)
+{
+	this->Angle = Angle;
+	return true;
+}
+
+const float & Obj::GetAngle(void)
+{
+	return this->Angle;
+}
+
 void Obj::SetMove(void)
 {
 

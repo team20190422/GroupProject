@@ -21,8 +21,11 @@ public:
 	const VECTOR2& GetSize(void);
 	void SetSize(const VECTOR2& divSize);
 
-	bool SetPos(VECTOR3 pos);
-	const VECTOR3& GetPos(void);
+	virtual bool SetPos(VECTOR3 pos);
+	virtual const VECTOR3& GetPos(void);
+
+	virtual bool SetAngle(float Angle);
+	virtual const float& GetAngle(void);
 
 private:
 
@@ -37,6 +40,6 @@ protected:
 	VECTOR3 pos = { 0,0 };			//	•`‰æˆÊ’u
 	VECTOR2 drawOffset;
 	float speed;						//	½Ëß°ÄÞ
-
+	float Angle;
 };
 

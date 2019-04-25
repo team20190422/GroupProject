@@ -1,4 +1,5 @@
 #include <Dxlib.h>
+#include <list>
 #include "GameTask.h"
 #include "BackGround.h"
 

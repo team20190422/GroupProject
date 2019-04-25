@@ -3,6 +3,7 @@
 #include<list>
 #include<map>
 #include "Obj.h"
+#include "BasePlanet.h"
 
 //class Player;
 //class Stage;
@@ -17,14 +18,17 @@ enum GAME_MODE {
 	GAME_RESULT
 };
 
+// ãÛî†çÏê¨
 typedef std::shared_ptr<Obj> obj_ptr;
 typedef std::list<obj_ptr> obj_List;
+
+typedef std::shared_ptr<BasePlanet> bp_ptr;
+typedef std::list<bp_ptr> bp_List;
 
 constexpr int SCREEN_SIZE_X(450);
 constexpr int SCREEN_SIZE_Y(800);
 
 class BackGround;
-
 
 class GameTask
 {
@@ -50,6 +54,8 @@ public:
 	int SetCount();
 	
 	int count = 0;
+	VECTOR3 playerPos;
+	float playerAngle;
 
 
 	//char KeyData[256], KeyDataOld[256]; 
@@ -63,6 +69,7 @@ public:
 private:
 
 	std::list<obj_ptr>::iterator AddObjlist(obj_ptr && objPtr);
+	std::list<bp_ptr>::iterator AddBplist(bp_ptr && bpPtr);
 
 	int GameInit(void);
 	int GameTitle(void);
@@ -74,6 +81,9 @@ private:
 	obj_List objList;
 	std::list<obj_ptr>::iterator player;
 	BackGround* back;
+	// bpListÇ…äiî[
+	bp_List bpList;
+	std::list<bp_ptr>::iterator mars;
 
 	// ∑∞ä÷åW
 	int newKey, oldKey , trgKey;

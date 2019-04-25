@@ -2,6 +2,8 @@
 #include "GameTask.h"
 #include "Player.h"
 #include "BackGround.h"
+#include "BasePlanet.h"
+#include "Mars.h"
 //#include"Enemy.h"
 //#include "Stage.h"
 #include"KeyMng.h"
@@ -62,17 +64,20 @@ int GameTask::SystemInit(void)
 int GameTask::GameInit(void)
 {
 	objList.clear();
+	bpList.clear();
 
 	DrawString(0, 0, "INIT", 0xffff00);
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
 		GtskPtr = &GameTask::GameTitle;
 	}
+
+	// new‚Ý‚½‚¢‚È‚à‚Ì
 	player = AddObjlist(std::make_shared<Player>(lpKeyMng.trgKey,lpKeyMng.oldKey));
-	//back = AddObjlist(std::make_shared<BackGround>());
+	mars = AddBplist(std::make_shared<Mars>());
 
 	(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
-	//ImageMng::GetInstance().SetID("TITLE", "image/ƒ^ƒCƒgƒ‹.png");
+	
 
 	back = new BackGround();
 	return 0;
@@ -116,9 +121,16 @@ int GameTask::GameMain(void)
 		itrBG->Update();
 		itrBG->Draw();
 	}
+	for (auto itr : bpList)
+	{
+		// ‚·‚×‚Ä‚Ì˜f¯‚ÌUpdate
+		itr->Update();
+		itr->Draw();
+	}
 	for (auto itr : objList)
 	{
-
+		playerPos = (*player)->GetPos();
+		playerAngle = (*player)->GetAngle();
 		itr->Update();
 		itr->Draw();
 	}
@@ -159,6 +171,13 @@ std::list<obj_ptr>::iterator GameTask::AddObjlist(obj_ptr && objPtr)
 {
 	objList.push_back(objPtr);
 	auto itr = objList.end();
+	itr--;
+	return itr;
+}
+std::list<bp_ptr>::iterator GameTask::AddBplist(bp_ptr && bpPtr)
+{
+	bpList.push_back(bpPtr);
+	auto itr = bpList.end();
 	itr--;
 	return itr;
 }
