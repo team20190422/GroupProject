@@ -31,7 +31,7 @@ public:
 	bool SetPos(VECTOR3 pos);
 	const VECTOR3& GetPos(void);
 
-	VECTOR3 AddVec();
+	VECTOR3 AddVec(VECTOR3);
 
 	RECT  &GetRect();
 

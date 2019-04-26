@@ -125,7 +125,7 @@ const VECTOR3 & Player::GetPos(void)
 	return this->pos;
 }
 
-VECTOR3 Player::AddVec()
+VECTOR3 Player::AddVec(VECTOR3 gVec)
 {
 	return this->vec = gVec + vec;
 }
@@ -142,12 +142,11 @@ void Player::SetMove(void)
 
 	vec.x = sin(Angle);
 	vec.y = -(cos(Angle));
-	VECTOR3 i = Obj::Normalize(gVec, distance);
-	AddVec();
+	AddVec(Obj::Normalize(gVec, distance));
 	pos += (vec * speed);
 	SetPos(pos);
 
-	DrawFormatString(10, 190, GetColor(255, 255, 255), "Normal.x　%f,Normal.y　%f", i.x,i.y);
+	DrawFormatString(10, 190, GetColor(255, 255, 255), "Normal.x　%f,Normal.y　%f", gVec.x, gVec.y);
 
 	for (int i = 0; i < particleMax; i++)
 	{
