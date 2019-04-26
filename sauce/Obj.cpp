@@ -3,9 +3,9 @@
 #include "ImageMng.h"
 
 
-/*Obj::Obj()
+Obj::Obj()
 {
-}*/
+}
 
 Obj::Obj(const int(&trgKey)[6], const int(&oldKey)[6])
 {
@@ -33,6 +33,16 @@ void Obj::Update(void)
 
 void Obj::Draw(void)
 {
+}
+
+RECT &Obj::GetRect()
+{
+	return this->rect;
+}
+
+const int & Obj::GetTimer(void)
+{
+	return 0;
 }
 
 const VECTOR2 & Obj::GetSize(void)
@@ -65,6 +75,29 @@ bool Obj::SetAngle(float Angle)
 const float & Obj::GetAngle(void)
 {
 	return this->Angle;
+}
+
+bool Obj::SetDistance(float distance)
+{
+	this->distance = distance;
+	return true;
+}
+
+const float & Obj::GetDistance()
+{
+	return this->distance;
+}
+
+const VECTOR3 & Obj::GetVec()
+{
+	return this->Vec;
+}
+
+const VECTOR3 & Obj::Normalize(VECTOR3 i,float mgn)
+{
+	i.x /= mgn;
+	i.y /= mgn;
+	return i;
 }
 
 void Obj::SetMove(void)
