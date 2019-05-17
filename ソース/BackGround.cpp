@@ -45,16 +45,18 @@ void BackGround::Update()
 {
 	if (lpGameTask.playerVec.y < 0)
 	{
-		vy += 0.2f;
-		if (randomY + vy > SCREEN_SIZE_Y)
+		vyS += 0.1f;
+		vyM += 0.2f;
+		if (randomY + vyS > SCREEN_SIZE_Y || randomY + (vyM / 2) > SCREEN_SIZE_Y)
 		{
 			removeFlag = true;
 		}
 	}
 	else if (lpGameTask.playerVec.y > 0)
 	{
-		vy -= 0.2f;
-		if (randomY + vy < 0)
+		vyS -= 0.1f;
+		vyM -= 0.2f;
+		if (randomY + vyS < 0 || randomY + (vyM / 2) < 0)
 		{
 			removeFlag = true;
 		}
@@ -66,10 +68,10 @@ void BackGround::Draw()
 	//int col = GetRand(255);
 	if (randomX % 2 == 0)
 	{
-		DrawCircle(randomX, randomY + vy, 1, GetColor(255,255,255), true);
+		DrawCircle(randomX, randomY + vyS, 1, GetColor(255,255,255), true);
 	}
 	else if(randomX % 3 == 0)
 	{
-		DrawCircle(randomX, randomY + vy, 2, GetColor(255,255,255), true);
+		DrawCircle(randomX, randomY + vyM, 2, GetColor(255,255,255), true);
 	}	
 }

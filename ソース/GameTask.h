@@ -73,7 +73,6 @@ public:
 	const VECTOR3& GetScrollPos(void);
 	void SetScrollPos(VECTOR3 addPos);
 
-
 	VECTOR3 playerPos;
 	float playerAngle;
 
@@ -81,10 +80,12 @@ public:
 	bool setCount = false;
 
 	float distance = 0;
+	float gravity = 0.0f;
 
 	//À°¹Ş¯Ä
 	VECTOR3 targetPos = { 0,0 };
 	VECTOR3 targetVec = { 0,0 };
+	float targetDistance = 0.0f;
 	float targetSize = 0;
 
 	// ÌßÚ²Ô°
@@ -93,8 +94,7 @@ public:
 	VECTOR3 PandPvec = { 0,0 };			// playerPosC‚ÆplanetPosC‚ÌÍŞ¸ÄÙ
 	VECTOR3 ScrollPos = { 0,0 };		// ¶Ò×½¸Û°Ù
 	VECTOR3 pltrgPos = { 0,0 };
-
-	bool OutOfScreen = false;
+	bool OutOfScreen = false;				// ÌßÚ²Ô°‚ª‰æ–Ê’[‚©‚ç—£‚ê‚½ê‡‚ÌÌ×¸Ş
 	bool landingFlag = false;				// ÌßÚ²Ô°‚ª’…—¤¬Œ÷‚µ‚½‚ç
 	bool returnFlag = false;				// ÌßÚ²Ô°‚ª’n‹…‚É‹AŠÒ¬Œ÷‚µ‚½‚ÌÌ×¸Ş
 	bool getSample = false;					// ÌßÚ²Ô°‹AŠÒ‚É–Ú•W‚Ì˜f¯‚É“’B‚µ‚½‚©‚ÌÌ×¸Ş
@@ -107,13 +107,18 @@ private:
 
 	int GameInit(void);
 	int GameTitle(void);
-	int GameMain(void);
+	int GameMain(void);				// ‰F’ˆ—V‰j
+	int GameLandInit(void);
+	int GameLanding(void);			//’…—¤
 	int GameResult(void);
+	int GameOver(void);
+	int GameClear(void);
 
 	int (GameTask::*GtskPtr)(void);
 
 	obj_List objList;
 	std::list<obj_ptr>::iterator player;
+	std::list<obj_ptr>::iterator landPlayer;
 	BackGround* back;
 	std::list<obj_ptr>::iterator obstracle;
 
@@ -121,6 +126,7 @@ private:
 	bp_List bpList;
 	std::list<bp_ptr>::iterator earth;
 	std::list<bp_ptr>::iterator mars;
+	std::list<bp_ptr>::iterator asteroid;
 
 	// int
 	// ·°ŠÖŒW
@@ -128,12 +134,18 @@ private:
 	int Energy = { 0 };
 	int time = 0;
 
-	int DieAnim[11] = { 0 };
+	int DieAnim[12] = { 0 };
+	int OutScrAnim[11] = { 0 };
 	int AnimCnt = 0;
 	int AnimTime = 0;
 	int checkCnt = 0;
 	int clearCnt = 0;				// ’…—¤¬Œ÷‚Ì–³“GŠÔ
-	std::array<int, 2> landingCnt = { 255, 255 };
+
+	// »ÌŞÀ²ÄÙ
+	int subTitleCnt = 0;
+	int subTitleAnim = 0;
+	bool subTitleFlag = false;
+	std::array<int, 3> landingCnt = { 255, 255,255 };
 
 
 	//ÌßÚ²Ô°‚Ì“–‚½‚è”»’è‚ÌŠÇ—
@@ -142,5 +154,15 @@ private:
 	bool clearCheck = false;				// ˜f¯‚Ì’…—¤‚É¬Œ÷‚µ‚½Ì×¸Ş
 
 	bool energyAnim = false;
-	
+	bool landAnimFlag = false;
+
+	// ‚±‚±‚©‚ç
+	int limitTime = 4;
+	float limitAnimSize = 2.0f;
+	int GameOverTime = 0;
+	int outScreenTime = 0;
+
+	int StageCnt = 0;
+	// ‚±‚±‚Ü‚Å
+
 };

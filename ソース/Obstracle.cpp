@@ -8,7 +8,7 @@
 Obstracle::Obstracle()
 {
 	pos = { (float)SCREEN_SIZE_X / 2,(float)SCREEN_SIZE_Y};
-	speed = 10.0f;
+	speed = 5.0f;
 	o.left = (long)(pos.x - size.x / 2);
 	o.right = (long)(pos.x + size.x / 2);
 	o.top = (long)(pos.y - size.y / 2);

@@ -9,6 +9,7 @@ public:
 	void Draw();
 	int HitCheck(VECTOR3,VECTOR3, VECTOR3, VECTOR3, float);
 	const float& GetDistance();
+	const float& GetGravity();
 	const VECTOR3& GetVec();
 private:
 
@@ -26,10 +27,11 @@ private:
 	VECTOR3 planetPosC = { 0,0 };		// planetPosÇÃíÜêSç¿ïW
 	VECTOR3 nearPos = { 0,0 };
 	float distance = 0.0f;
+	float gravity = 0.0f;
 
 
 protected:
-	float g,r;
+	float g, r = { 0.0f };
 	int image;
 	bool PlanetFactry(float, float, VECTOR3);
 	int GetRadius(int);

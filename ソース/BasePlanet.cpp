@@ -18,6 +18,7 @@ BasePlanet::~BasePlanet()
 //BasePlanet::PlanetFactry(˜f¯‚Ìd—Í, ˜f¯‚Ì”¼Œa, ˜f¯‚Ìpos)
 bool BasePlanet::PlanetFactry(float g, float r, VECTOR3 planetPos)
 {
+	gravity = g;
 	// playerPosC‚ðÌßÚ²Ô°‚Ì’†SÀ•W‚ÉÝ’è
 	playerPosC = GameTask::GetInstance().playerPos;
 	// playerPos‚ðÌßÚ²Ô°‚Ì¶ãÀ•W‚ÉÝ’è
@@ -41,7 +42,7 @@ bool BasePlanet::PlanetFactry(float g, float r, VECTOR3 planetPos)
 	DrawFormatString(10, 130, GetColor(255, 255, 255), "PLposX@%f  PLposY %f", planetPos.x, planetPos.y);*/
 	//DrawFormatString(10, 160, GetColor(255, 255, 255), "hitX@%f  hitY %f", hit.x, hit.y);
 
-	DrawLine(playerPosC.x, playerPosC.y, planetPosC.x, planetPosC.y, 0x0000ff);
+	//DrawLine(playerPosC.x, playerPosC.y, planetPosC.x, planetPosC.y, 0x0000ff);
 
 	if (HitCheck(playerPos, planetPosC, playerPosC, planetPosC, r))
 	{
@@ -126,6 +127,11 @@ int BasePlanet::HitCheck(VECTOR3 playerPos,VECTOR3 planetPos, VECTOR3 playerPosC
 const float & BasePlanet::GetDistance()
 {
 	return this->distance;
+}
+
+const float & BasePlanet::GetGravity()
+{
+	return this->gravity;
 }
 
 const VECTOR3 & BasePlanet::GetVec()

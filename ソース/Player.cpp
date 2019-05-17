@@ -2,6 +2,8 @@
 #include "ImageMng.h"
 #include "Particle.h"
 
+constexpr unsigned int posY_Max = (float)SCREEN_SIZE_Y - (float)SCREEN_SIZE_Y / 3;
+
 Player::Player(const int(&trgKey)[6], const int(&oldKey)[6]) :Obj(trgKey, oldKey)
 {
 	particleList.clear();
@@ -64,16 +66,18 @@ void Player::Draw(void)
 	if (pos.x < -32)
 	{
 		lpGameTask.OutOfScreen = true;
-		DrawTriangle(0, pos.y, 20, pos.y + 10, 20, pos.y - 10, 0xffffff, true);
-		DrawCircle(40, pos.y, 32, GetColor(255, 255, 255), true);
-		DrawRotaGraph(40, pos.y, 1.0, Angle, IMAGE_ID(imageName), true);
+		DrawTriangle(0, pos.y, 20, pos.y + 5, 20, pos.y - 5, 0xffffff, true);
+		DrawCircle(45, pos.y, 35, GetColor(255, 255, 255), true);
+		DrawCircle(45, pos.y, 32, GetColor(0, 0, 0), true);
+		DrawRotaGraph(45, pos.y, 1.0, Angle, IMAGE_ID(imageName), true);
 	}
 	else if(pos.x > SCREEN_SIZE_X + PLAYER_SIZE)
 	{
 		lpGameTask.OutOfScreen = true;
-		DrawTriangle(SCREEN_SIZE_X, pos.y, SCREEN_SIZE_X - 20, pos.y + 10, SCREEN_SIZE_X - 20, pos.y - 10, 0xffffff, true);
-		DrawCircle(SCREEN_SIZE_X - 40, pos.y, 32, GetColor(255, 255, 255), true);
-		DrawRotaGraph(SCREEN_SIZE_X - 40, pos.y, 1.0, Angle, IMAGE_ID(imageName), true);
+		DrawTriangle(SCREEN_SIZE_X, pos.y, SCREEN_SIZE_X - 20, pos.y + 5, SCREEN_SIZE_X - 20, pos.y - 5, 0xffffff, true);
+		DrawCircle(SCREEN_SIZE_X - 45, pos.y, 35, GetColor(255, 255, 255), true);
+		DrawCircle(SCREEN_SIZE_X - 45, pos.y, 32, GetColor(0, 0, 0), true);
+		DrawRotaGraph(SCREEN_SIZE_X - 45, pos.y, 1.0, Angle, IMAGE_ID(imageName), true);
 	}
 	else
 	{
@@ -109,7 +113,7 @@ void Player::Draw(void)
 	DrawExtendGraph(5, 100, 145, 150, IMAGE_ID("image/fuel.png"), true);
 
 	DrawFormatString(90, 30, GetColor(255, 255, 255), ":%.2f", speed);
-	DrawFormatString(70, 60, GetColor(255, 255, 255), ":%d", (int)distance);
+	DrawFormatString(70, 60, GetColor(255, 255, 255), ":%d", (int)lpGameTask.targetDistance);
 	DrawFormatString(60, 95, GetColor(255, 255, 255), ":%d", energy);
 
 
@@ -129,8 +133,8 @@ void Player::Update(void)
 	radianPos.y = pos.y + (100 * sin(count / 2));
 
 
-	float PreAngle = atan2(radianPos.y - pos.y, radianPos.x - pos.x) + 1.5f;
-	float PreAngle2 = atan2(newPrePos.y, newPrePos.x) + 1.5f;
+	PreAngle = atan2(radianPos.y - pos.y, radianPos.x - pos.x) + 1.5f;
+	PreAngle2 = atan2(newPrePos.y, newPrePos.x) + 1.5f;
 
 	
 	newPos.x = (pos.x) + (50 * cos(newcount / 2));
@@ -155,9 +159,9 @@ void Player::Update(void)
 			speed = 0.13f;
 			if (landingTime++ % 3 == 0)
 			{
-				Size -= 0.015f;
+				Size -= 0.01f;
 			}
-			if (Size <= 0)
+			if (Size <= 0.7)
 			{
 				lpGameTask.landingFlag = true;
 			}
@@ -191,10 +195,11 @@ void Player::Update(void)
 	}
 	lpGameTask.SetEnergy(energy);
 	distance = GameTask::GetInstance().distance;
+	EofG = GameTask::GetInstance().gravity;
 	gVec = GameTask::GetInstance().PandPvec;
 	//DrawFormatString(10, 400, GetColor(255, 255, 255), "Angle:%ff", Angle);
-	/*DrawFormatString(10, 350, GetColor(255, 255, 255), "EofG:%f", EofG);
-	DrawFormatString(10, 380, GetColor(255, 255, 255), "gvecX:%f gvecY:%f", gVec.x, gVec.y);*/
+	DrawFormatString(10, 550, GetColor(255, 255, 255), "EofG:%f", EofG);
+	//DrawFormatString(10, 380, GetColor(255, 255, 255), "gvecX:%f gvecY:%f", gVec.x, gVec.y);*/
 }
 
 RECT  &Player::GetRect()
@@ -249,9 +254,9 @@ void Player::SetMove(void)
 
 
 	//DrawFormatString(10, 350, GetColor(255, 255, 255), "addVecX:%f addVecY:%f", addVec.x,addVec.y);
-	if (MaxFlag && !lpGameTask.landingFlag && !lpGameTask.GetHitCheck())
+	if ((!lpGameTask.GetHitCheck()))
 	{
-		if (plPos.y > playerPosMaxY)
+		if (plPos.y > playerPosMaxY || pos.y <= posY_Max)
 		{
 			lpGameTask.plPosMaxFlag = false;
 			lpGameTask.SetScrollPos(-(addVec * speed));
@@ -264,7 +269,7 @@ void Player::SetMove(void)
 		MaxFlag = false;
 	}
 
-	if (pos.y >= posMax.y - addVec.y)
+	if (pos.y <= posMax.y - addVec.y)
 	{
 		MaxFlag = true;
 		pos.x += addVec.x * speed;
@@ -360,20 +365,36 @@ void Player::SetMove(void)
 	{
 		if (KeyMng::GetInstance().newKey[P1_RIGHT])
 		{
-			count += 0.05f;
+			rolInc += 0.0015f;
+			count += 0.005f + rolInc;
 			sideFlag = true;
 			sideCheck = 1;
 			newcount = newPrecount;
+			lrFlag = 1;
 		}
 		else if (KeyMng::GetInstance().newKey[P1_LEFT])
 		{
-			count -= 0.05f;
+			rolInc -= 0.0015f;
+			count -= 0.005f - rolInc;
 			sideFlag = true;
 			sideCheck = 2;
 			newcount = newPrecount;
+			lrFlag = -1;
 		}
 		else
 		{
+			if (lrFlag == 1)
+			{
+				count += 0.005f + rolInc;
+			}
+			else if (lrFlag == -1)
+			{
+				count -= 0.005f - rolInc;
+			}
+			else
+			{
+
+			}
 			//sideFlag = false;
 			sideCheck = 0;
 			if (sideParticleList.size() > 0)
@@ -440,7 +461,7 @@ void Player::SetMove(void)
 
 		if (sideParticleList.size() > 0)
 		{
-			if (sideParticleList.front()->GetTimer() > 12)
+			if (sideParticleList.front()->GetTimer() > 15)
 			{
 				if (!(sideParticleList.empty()))
 				{

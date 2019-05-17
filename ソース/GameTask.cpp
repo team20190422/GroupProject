@@ -1,16 +1,23 @@
 #include "DxLib.h"
 #include "GameTask.h"
 #include "Player.h"
+#include "LandPlayer.h"
 #include "BackGround.h"
 #include "Obstracle.h"
 #include "BasePlanet.h"
 #include "Mars.h"
 #include "Earth.h"
+#include "Asteroid.h"
+#include "StageSet.h"
 //#include"Enemy.h"
 //#include "Stage.h"
 #include"KeyMng.h"
 #include"ImageMng.h"
 
+//
+constexpr unsigned int SCREEN_CENTER_X = 200;
+constexpr unsigned int SCREEN_CENTER_Y = 300;
+constexpr unsigned int StageMax = 2;
 
 GameTask *GameTask::s_Instance = nullptr;
 int GameTask::GameUpdate(void)
@@ -118,6 +125,8 @@ int GameTask::SystemInit(void)
 	for (int j = 0; j < 11; j++)
 	{
 		DieAnim[j] = LoadDivGraph("image/îöî≠_ëÂ.png", 11, 11, 1, 115, 100, DieAnim,true);
+		OutScrAnim[j] = LoadDivGraph("image/countdown.png", 11, 11, 1, 100, 100, OutScrAnim, true);
+
 		//DieAnim[j] = LoadGraph("image/îöî≠_ëÂ.png");
 	}
 
@@ -128,20 +137,55 @@ int GameTask::SystemInit(void)
 
 int GameTask::GameInit(void)
 {
+	//
+	auto riset = [&] {
+		time = 0;
+		AnimCnt = 0;
+		clearCnt = 0;
+		limitAnimSize = 2.0f;
+		limitTime = 4;
+		subTitleCnt = 0;
+		subTitleAnim = 0;
+		outScreenTime = 0;
+		clearCheck = false;
+		landingCheck = false;
+		landingFlag = false;
+		returnFlag = false;
+		getSample = false;
+		subTitleFlag = false;
+
+	};
+	//
+
 	objList.clear();
 	bpList.clear();
 
+	//
+	riset();
+	//
 	DrawString(0, 0, "INIT", 0xffff00);
+
 	player = AddObjlist(std::make_shared<Player>(lpKeyMng.trgKey,lpKeyMng.oldKey));
 	obstracle = AddObjlist(std::make_shared<Obstracle>());
 
 	earth = AddBplist(std::make_shared<Earth>(VECTOR3(225, SCREEN_SIZE_Y * 2)));
 
-	mars = AddBplist(std::make_shared<Mars>(VECTOR3(200,200)));
+	int AsteroidCnt = 0;
+	for (auto planet : stageSet[StageCnt])
+	{
+		AsteroidCnt++;
+		asteroid = AddBplist(std::make_shared<Asteroid>(planet, AsteroidCnt));
+	}
 
-	//mars = AddBplist(std::make_shared<Mars>(VECTOR3(225, 900)));
+	for (auto targetPlanet : targetSet)
+	{
+		if (targetPlanet == targetSet[StageCnt])
+		{
+			mars = AddBplist(std::make_shared<Mars>(targetPlanet));
+		}
+	}
 
-	(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
+	(*player)->init("image/Player2.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
 	(*obstracle)->init("image/meteo.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 0.5f);
 
 	//ImageMng::GetInstance().SetID("TITLE", "image/É^ÉCÉgÉã.png");
@@ -155,6 +199,7 @@ int GameTask::GameInit(void)
 int GameTask::GameTitle(void)
 {
 	ClsDrawScreen();
+	StageCnt = 0;
 
 	//ÉQÅ[ÉÄÉÇÅ[Éhà⁄çs
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
@@ -166,18 +211,81 @@ int GameTask::GameTitle(void)
 	return 0;
 }
 
+// âFíàóVâj
 int GameTask::GameMain(void)
 {
 	ClsDrawScreen();
 
+	// Ç±Ç±Ç©ÇÁ
+	auto StageDraw = [&] {
+		SetFontSize(60);
+		ChangeFont("Ailerons");
 
-	if (KeyMng::GetInstance().trgKey[P1_ENTER])
+		if (!subTitleFlag)
+		{
+			if (subTitleCnt < 255)
+			{
+				subTitleCnt += 5;
+			}
+			else
+			{
+				subTitleAnim++;
+				if (subTitleAnim > 60)
+				{
+					subTitleFlag = true;
+				}
+			}
+
+			DrawFormatString(SCREEN_CENTER_X - SCREEN_SIZE_X / 4, SCREEN_CENTER_Y, GetColor(subTitleCnt, subTitleCnt, subTitleCnt), "STAGE %d", StageCnt + 1);
+		}
+		else
+		{
+			if (subTitleCnt > 0)
+			{
+				subTitleCnt -= 5;
+				DrawFormatString(SCREEN_CENTER_X - SCREEN_SIZE_X / 4, SCREEN_CENTER_Y, GetColor(subTitleCnt, subTitleCnt, subTitleCnt), "STAGE %d", StageCnt + 1);
+
+			}
+			else
+			{
+
+			}
+		}
+		ChangeFont("MSÉSÉVÉbÉN");
+
+		SetFontSize(20);		// Ã´›ƒÇÃª≤Ωﬁ
+
+	};
+
+	auto GameOver = [&] {
+
+		if (GetHitCheck())
+		{
+			if (landingCnt[0] > 0)
+			{
+				landingCnt[0] -= 5;
+				return true;
+			}
+			else
+			{
+				GtskPtr = &GameTask::GameOver;
+				return true;
+			}
+		}
+		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
+
+		return false;
+	};
+	// Ç±Ç±Ç‹Ç≈
+
+	/*if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
 		landingCheck = false;
 		GtskPtr = &GameTask::GameResult;
-	}
+	}*/
 
 	std::vector<BackGround*>::iterator itrBG = backVec.begin();
+
 
 	if (count <= 300)
 	{
@@ -211,13 +319,25 @@ int GameTask::GameMain(void)
 		}
 
 		itr->Draw();
+
+		if (!clearCheck)
+		{
+			targetDistance = (*mars)->GetDistance();
+		}
+		else
+		{
+			targetDistance = (*earth)->GetDistance();
+		}
 		if (itr->GetDistance() < distance)
 		{
 
 			PandPvec = itr->GetVec();
-			if(itr->GetDistance() > 0)
+			if (itr->GetDistance() > 0)
+			{
 				distance = itr->GetDistance();
+				gravity = itr->GetGravity();
 
+			}
 		}
 
 	}
@@ -243,24 +363,20 @@ int GameTask::GameMain(void)
 				AnimCnt++;
 			}
 			//DrawBox(playerPos.x, playerPos.y, playerPos.x + 200, playerPos.y + 200, 0xffffff, true);
-			DrawRotaGraph(playerPos.x, playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
-			DrawString(playerPos.x, playerPos.y, "Ç‚ÇÁÇÍÇΩ", 0xffffff);
+			DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
+			DrawString((int)playerPos.x, (int)playerPos.y, "Ç‚ÇÁÇÍÇΩ", 0xffffff);
+			// Ç±Ç±ÇÃifï™
+			if (AnimCnt >= 11)
+			{
+				GameOver();
+			}
 		}
 		
 		if (landingCheck && landingFlag)
 		{
 			SetHitCheck(false);
 
-			if (checkCnt++ > 120 && !returnFlag)
-			{
-				pltrgPos = VECTOR3(playerPos.x + targetVec.x * 2, playerPos.y);
-				(*player)->SetPos(pltrgPos);
-				SetScrollPos(targetVec);
-				setCount = true;
-				landingCheck = false;
-				checkCnt = 0;
-				pltrgPos = { 0,0 };
-			}
+			
 		}
 	}
 	// îwåiÇÃçÌèú
@@ -301,19 +417,61 @@ int GameTask::GameMain(void)
 				// –ØºÆ›∏ÿ±
 				GtskPtr = &GameTask::GameResult;
 			}
-			// ∏ÿ±â¬î\èÛë‘Ç…Ç∑ÇÈ
-			clearCheck = true;
+			if (landingCheck && landingFlag && !clearCheck)
+			{
+				// íÖó§Ç…à⁄çs
+				GtskPtr = &GameTask::GameLandInit;
+			}
+			
 		}
 		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 	}
 	else
 	{
-		if (landingCnt[0] < 255)
+		// Ç±Ç±
+		if (landingCnt[0] < 255 && !GetHitCheck())
 		{
 			landingCnt[0] += 20;
 		}
 
 		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
+	}
+
+	// Ç±Ç±Ç©ÇÁ
+	// é©ã@ÇÃâÊñ äOéû
+	if (OutOfScreen)
+	{
+		SetDrawBright(landingCnt[1] + 50, landingCnt[1] + 50, landingCnt[1] + 50);
+
+		for (int x = 0; x < SCREEN_SIZE_X; x++)
+		{
+			for (int y = 0; y < SCREEN_SIZE_Y; y++)
+			{
+				auto randomY = GetRand(10000);
+
+				DrawPixel(x, y + randomY, GetColor(255, 255, 255));
+			}
+		}
+
+		
+			if (landingCnt[1] > 0 && (outScreenTime++ % 60) == 0)
+			{
+				landingCnt[1] -= 20;
+				limitTime++;
+			}
+			SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+	}
+	else
+	{
+		limitTime = 4;
+		limitAnimSize = 2.0f;
+		outScreenTime = 0;
+		if (Energy >= 200 && landingCnt[1] < 255 && landingCnt[0] >= 255)
+		{
+			landingCnt[1] += 10;
+			SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+
+		}
 	}
 
 	// îRóøè≠ó éû
@@ -339,9 +497,35 @@ int GameTask::GameMain(void)
 		SetDrawBright(255, landingCnt[1], landingCnt[1]);
 	}
 
+	if (Energy <= 0)
+	{
+		if (GameOverTime++ > 60)
+		{
+			if (landingCnt[1] > 0)
+			{
+				landingCnt[1] -= 10;
+			}
+			else if(landingCnt[1] <= 5)
+			{
+				ClsDrawScreen();
+				GtskPtr = &GameTask::GameOver;
+				GameOverTime = 0;
+			}
+			SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+
+
+		}
+	}
+	// Ç±Ç±Ç‹Ç≈
+	
+
 	if (clearCheck)
 	{
 		clearCnt++;
+	}
+	if (AnimCnt >= 10)
+	{
+		AnimCnt = 10;
 	}
 
 	// íÖó§ê¨å˜éûÇÃëΩè≠ÇÃñ≥ìGéûä‘
@@ -353,19 +537,125 @@ int GameTask::GameMain(void)
 		}
 		else
 		{
-			clearCnt = 0;
+			//clearCnt = 0;
 		}
 	}
 
+	// Ç±Ç±Ç©ÇÁ
+	if (OutOfScreen)
+	{
+
+		//SetFontSize(limitAnimSize--);
+		limitAnimSize -= 0.033f;
+		if(limitTime > 10)
+		SetDrawBright(255, 255, 255);
+		//DrawFormatString(SCREEN_CENTER_X, SCREEN_CENTER_Y, GetColor(255, 255, 255), "%d", limitTime);
+		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, limitAnimSize, 0, OutScrAnim[limitTime], true);
+		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+		SetFontSize(20);		// Ã´›ƒÇÃª≤Ωﬁ
+
+	}
+
+	if (limitAnimSize <= 0)
+	{
+		limitAnimSize = 2.0f;
+	}
+
+	if (limitTime >= 10)
+	{
+		if (landingCnt[1] > 0)
+		{
+			landingCnt[1] -= 10;
+		}
+		else
+		{
+
+			if (GameOverTime++ > 60)
+			{
+				ClsDrawScreen();
+				GtskPtr = &GameTask::GameOver;
+				GameOverTime = 0;
+			}
+		}
+
+		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+	}
+
+	// Ω√∞ºﬁ∂≥›ƒ
+	StageDraw();
+
+	// Ç±Ç±Ç‹Ç≈
+
 	DrawFormatStringF(10, 500, GetColor(255, 255, 255), "íÖó§ %d flag %d hit %d clear %d", landingCheck, landingFlag, hitCheck, clearCheck);
-	DrawFormatStringF(10, 600, GetColor(255, 255, 255), "posX %f posY %f", playerPos.x, playerPos.y);
-
-	DrawFormatStringF(10, 550, GetColor(255, 255, 255), "targetX %f targetY %f", targetVec.x, targetVec.y);
-	DrawFormatStringF(10, 650, GetColor(255, 255, 255), "setPosX %f setPosX %f", pltrgPos.x, pltrgPos.y);
-
+	DrawFormatStringF(10, 600, GetColor(255, 255, 255), "GameOverTime %d", GameOverTime);
 
 	ScreenFlip();
 
+	return 0;
+}
+
+int GameTask::GameLandInit(void)
+{
+	landPlayer = AddObjlist(std::make_shared<LandPlayer>(lpKeyMng.trgKey, lpKeyMng.oldKey));
+
+	(*landPlayer)->init("image/playerBeforeLanding.png", VECTOR2(44 / 1, 22 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
+
+
+	GtskPtr = &GameTask::GameLanding;
+
+	return 0;
+}
+
+int GameTask::GameLanding(void)
+{
+
+	ClsDrawScreen();
+
+
+	if (landingCnt[0] < 255 && !landAnimFlag)
+	{
+		landingCnt[0] += 20;
+	}
+	if (landingCnt[0] > 0 && landAnimFlag)
+	{
+		landingCnt[0] -= 20;
+	}
+
+	for (auto itr : objList)
+	{
+		(*landPlayer)->Draw();
+		(*landPlayer)->Update();
+	}
+
+	SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
+
+	DrawString(0, 0, "GameLanding", 0xffffff);
+
+	if (KeyMng::GetInstance().trgKey[P1_ENTER])
+	{
+		landAnimFlag = true;
+	}
+
+	// èåèíBê¨ÇµÇΩÇÁâFíàÇ÷ñﬂÇÈ
+	if (landAnimFlag && landingCnt[0] <= 0)
+	{
+		pltrgPos = VECTOR3(playerPos.x + targetVec.x * 2, playerPos.y);
+		(*player)->SetPos(pltrgPos);
+		SetScrollPos(targetVec);
+		setCount = true;
+		landingCheck = false;
+		landAnimFlag = false;
+		clearCheck = true;						// ∏ÿ±â¬î\èÛë‘Ç…Ç∑ÇÈ
+		checkCnt = 0;
+		pltrgPos = { 0,0 };
+		if (objList.size() > 0)
+		{
+			objList.pop_back();
+		}
+		GtskPtr = &GameTask::GameMain;
+	}
+
+	ScreenFlip();
 	return 0;
 }
 
@@ -374,14 +664,20 @@ int GameTask::GameResult(void)
 
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
-		time = 0;
+		/*time = 0;
 		AnimCnt = 0;
+		clearCnt = 0;
 		clearCheck = false;
 		landingCheck = false;
 		landingFlag = false;
 		returnFlag = false;
-		getSample = false;
+		getSample = false;*/
+		StageCnt++;
 		GtskPtr = &GameTask::GameInit;
+		if (StageCnt == StageMax)
+		{
+			GtskPtr = &GameTask::GameTitle;
+		}
 	}
 	if (landingCnt[0] < 255)
 	{
@@ -406,6 +702,76 @@ int GameTask::GameResult(void)
 
 	ScreenFlip();
 
+	return 0;
+}
+
+int GameTask::GameOver(void)
+{
+
+	if (KeyMng::GetInstance().trgKey[P1_ENTER])
+	{
+		time = 0;
+		AnimCnt = 0;
+		clearCnt = 0;
+		clearCheck = false;
+		landingCheck = false;
+		landingFlag = false;
+		returnFlag = false;
+		getSample = false;
+		GtskPtr = &GameTask::GameTitle;
+	}
+	if (KeyMng::GetInstance().trgKey[P1_SPACE])
+	{
+		time = 0;
+		AnimCnt = 0;
+		clearCnt = 0;
+		clearCheck = false;
+		landingCheck = false;
+		landingFlag = false;
+		returnFlag = false;
+		getSample = false;
+		GtskPtr = &GameTask::GameInit;
+	}
+
+	if (landingCnt[0] < 255)
+	{
+		landingCnt[0] += 5;
+	}
+	if (landingCnt[1] < 255)
+	{
+		landingCnt[1] += 5;
+	}
+
+	if (landingCnt[0] < landingCnt[1])
+	{
+		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
+	}
+	else
+	{
+		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+	}
+
+
+	DrawString(0, 0, "GameResult", 0xffffff);
+
+
+	SetFontSize(50);		// Ã´›ƒÇÃª≤Ωﬁ
+	SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
+	ChangeFont("Ailerons");
+	DrawString(SCREEN_CENTER_X - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "GAME OVER", 0xffffff);
+	SetFontSize(20);		// Ã´›ƒÇÃª≤Ωﬁ
+	SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
+	ChangeFont("MSÉSÉVÉbÉN");
+
+	DrawFormatStringF(10, 500, GetColor(255, 255, 255), "íÖó§ %d flag %d return %d clear %d sample %d", landingCheck, landingFlag, returnFlag, clearCheck, getSample);
+
+	ScreenFlip();
+
+	return 0;
+}
+
+int GameTask::GameClear(void)
+{
 	return 0;
 }
 

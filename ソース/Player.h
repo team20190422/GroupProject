@@ -56,7 +56,7 @@ private:
 	std::array<std::array<int, particleMax>, 3> particleTime = { 0 };	// ﾊﾟｰﾃｨｸﾙの表示時間
 
 	VECTOR3 posMax = { 0,600 };							// 端
-	VECTOR3 pos = { 0,0 };
+	VECTOR3 pos = { (float)SCREEN_SIZE_X / 2, (float)SCREEN_SIZE_Y - (float)SCREEN_SIZE_Y / 3 };
 	VECTOR3 size = { 64 / 2, 32 / 1 };
 	VECTOR3 radianPos = { 0,0 };						// ﾌﾟﾚｲﾔｰの前方の座標
 	VECTOR3 turnPos = { 0,0 };							// ﾌﾟﾚｲﾔｰの左右の座標
@@ -66,6 +66,7 @@ private:
 	VECTOR3 PreVec = { 0,0 };
 	VECTOR3 plPos = { 0,0 };
 	float count = -3.0f;								//　前方座標のｵﾌｾｯﾄ
+	float rolInc = 0.0f;
 	float Size = 1.0f;										// ｻｲｽﾞ
 	float Angle = 0;									// 回転角度
 	float speed = 0.5f;									// ｽﾋﾟｰﾄﾞ
@@ -73,11 +74,14 @@ private:
 	float EofG = 1.5f;									// 重力の影響
 	int sideCheck = 0;									// 左右のﾊﾟｰﾃｨｸﾙのﾁｪｯｸ
 	bool MaxFlag = false;
-
+	int lrFlag = 0;
 	VECTOR3 newPos = { 0,0 };
 	VECTOR3 newPrePos = { 0,0 };
 	float newPrecount = -3.0f;
 	float newcount = -3.0f;
+
+	float PreAngle;
+	float PreAngle2;
 
 	int energy = 1000;
 	int landingTime = 0;

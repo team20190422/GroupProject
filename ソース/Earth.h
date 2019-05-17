@@ -16,6 +16,7 @@ private:
 	int EarthImage[EarthMax] = { 0 };
 	int earthCnt = 0;
 	int animCnt = 0;
+	float gravity = 0.0f;
 
 protected:
 	void Init(void);

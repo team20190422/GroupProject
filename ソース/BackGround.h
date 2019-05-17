@@ -17,7 +17,8 @@ public:
 
 
 private:
-	float vy = 0;
+	float vyS = 0;
+	float vyM = 0;
 	int randomX;
 	int randomY;
 	int count;

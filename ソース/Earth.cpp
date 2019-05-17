@@ -48,14 +48,15 @@ void Earth::Update(void)
 
 			if (playerPosR.y > radianPos.y - rSize && lpGameTask.playerPos.y < radianPos.y + rSize)
 			{
-				DrawString(lpGameTask.playerPos.x, lpGameTask.playerPos.y + rSize, "Get", 0xffffff, true);
 				lpGameTask.SetLandCheck(true);
 				lpGameTask.returnFlag = true;
 			}
 		}
 	}
 
-
+	if (BasePlanet::PlanetFactry(gravity, r, pos) && !lpGameTask.GetLandCheck())
+	{
+	}
 
 
 }
