@@ -96,6 +96,7 @@ int GameTask::GameInit(void)
 {
 	objList.clear();
 	bpList.clear();
+	InitSoundMem();		//メモリに読み込んだ音データをすべて削除する
 
 	DrawString(0, 0, "INIT", 0xffff00);
 	GtskPtr = &GameTask::GameTitle;
@@ -104,13 +105,15 @@ int GameTask::GameInit(void)
 	mars = AddBplist(std::make_shared<Mars>());
 	jupiter = AddBplist(std::make_shared<Jupiter>());
 	earth = AddBplist(std::make_shared<Earth>());
-	(*player)->init("image/PlayerTestG.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
+	(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
 	(*obstracle)->init("image/meteo.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 0.5f);
+	//画像読み込み
+	ImageMng::GetInstance().SetID2("Title", "image/title.png");//タイトル
+	ImageMng::GetInstance().SetID2("Result", "image/result.png");//リザルト
 	//音楽ファイル読み込み
-	//5InitSoundMem();
-	Title = LoadBGM("sound/uchuu-tanken .ogg");
+	OP = LoadBGM("sound/uchuu-tanken .ogg");
 	Main = LoadBGM("sound/宇宙の佇み.ogg");
-	Result = LoadBGM("sound/遊星.ogg");
+	End = LoadBGM("sound/遊星.ogg");
 	SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMPRESS);	// 圧縮された全データはシステムメモリに格納され、再生する部分だけ逐次解凍しながらサウンドメモリに格納する(鳴らし終わると解凍したデータは破棄されるので何度も解凍処理が行われる)
 	Decision = LoadSoundMem("sound/選択音.ogg");
 	Rocket = LoadSoundMem("sound/ロケット噴射.ogg");
@@ -119,16 +122,28 @@ int GameTask::GameInit(void)
 	//隠しコマンド
 	UFO = LoadSoundMem("sound/UFO01.ogg");
 	UFOBoost = LoadSoundMem("sound/sf_energy2 .ogg");
-	
 	UFOFlag = false;//隠しコマンド関係フラグ
 	BomFlag = false;//爆発フラグ
+
+	//フォント
+	InitFontToHandle();	//フォントデータをすべて削除する
+	Font = CreateFontToHandle("Segoe Print", 40, 3, DX_FONTTYPE_NORMAL);
 	back = new BackGround();
 	return 0;
 }
 
 int GameTask::GameTitle(void)
 {
-	if(CheckSoundMem(Title)== 0)PlaySoundMem(Title, DX_PLAYTYPE_LOOP);
+	int Title_X = -500;
+	int Title_Y = 0;
+	//画像描画
+	ImageMng::GetInstance().DrawImage("Title", Title_X, Title_Y, true);
+	//タイトル文字描画
+	int title_x = 100;
+	int title_y = 100;
+	DrawStringToHandle(title_x, title_y, "Swing Bye", 0xFFFFFF, Font);
+	//サウンド関係
+	if(CheckSoundMem(OP)== 0)PlaySoundMem(OP, DX_PLAYTYPE_LOOP);
 	//隠しコマンド
 	if (KeyMng::GetInstance().newKey[P1_SPACE]) {
 		UFOFlag = true;
@@ -142,8 +157,8 @@ int GameTask::GameTitle(void)
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(Title) == 1) {	//Titleが再生中なら
-			DeleteSoundMem(Title);	//メモリに読み込んだTitleの音データを削除
+		if (CheckSoundMem(OP) == 1) {	//Titleが再生中なら
+			DeleteSoundMem(OP);	//メモリに読み込んだTitleの音データを削除
 		}
 		GtskPtr = &GameTask::GameMain;
 	}
@@ -289,15 +304,24 @@ int GameTask::GameMain(void)
 
 int GameTask::GameResult(void)
 {
+	//画像描画
+	int Result_X = -100;
+	int Result_Y = 0;
+	ImageMng::GetInstance().DrawImage("Result", Result_X, Result_Y, true);
+	//タイトル文字描画
+	int result_x = 150;
+	int result_y = 100;
+	DrawStringToHandle(result_x, result_y, "Result", 0xFFFFFF, Font);
+	//サウンド
 	if (CheckSoundMem(Rocket) == 1)DeleteSoundMem(Rocket);
 	if (CheckSoundMem(Bom) == 1)DeleteSoundMem(Bom);
-	if (CheckSoundMem(Result) == 0)PlaySoundMem(Result, DX_PLAYTYPE_LOOP);
+	if (CheckSoundMem(End) == 0)PlaySoundMem(End, DX_PLAYTYPE_LOOP);
 
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(Result) == 1) {	//Resultが再生中なら
-			DeleteSoundMem(Result);	//メモリに読み込んだResultの音データを削除
+		if (CheckSoundMem(End) == 1) {	//Resultが再生中なら
+			DeleteSoundMem(End);	//メモリに読み込んだResultの音データを削除
 		}
 		GtskPtr = &GameTask::GameInit;
 	}

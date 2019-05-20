@@ -110,10 +110,11 @@ private:
 	int newKey, oldKey , trgKey;
 
 	//音楽関係
-	int Title, Main, Result;	//BGM
-	int Decision, Cancel, Rocket,Bom,Boost, Get,UFO,UFOBoost;
+	int OP, Main, End;	//BGM
+	int Decision, Cancel, Rocket,Bom,Boost,UFO,UFOBoost;
 	bool UFOFlag,BomFlag;
-
+	//フォント関係
+	int Font;//フォントハンドル
 	//ﾌﾟﾚｲﾔｰの当たり判定の管理
 	bool hitCheck = false;
 	
