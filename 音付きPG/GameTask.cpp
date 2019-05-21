@@ -133,7 +133,7 @@ int GameTask::SystemInit(void)
 	OP = LoadBGM("sound/uchuu-tanken .ogg");
 	Main = LoadBGM("sound/宇宙の佇み.ogg");
 	Result = LoadBGM("sound/遊星.ogg");
-	Over = LoadBGM("sound/宇宙空間 .ogg");
+	Over = LoadBGM("sound/宇宙空間.ogg");
 	SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMPRESS);	// 圧縮された全データはシステムメモリに格納され、再生する部分だけ逐次解凍しながらサウンドメモリに格納する(鳴らし終わると解凍したデータは破棄されるので何度も解凍処理が行われる)
 	Decision = LoadSoundMem("sound/選択音.ogg");
 	Rocket = LoadSoundMem("sound/ロケット噴射.ogg");
@@ -217,15 +217,13 @@ int GameTask::GameTitle(void)
 	int title_x = 50, title_y = 50;
 	DrawGraph(title_x, title_y, IMAGE_ID("image/titleRogo.png"), true);
 	//サウンド関係
-	if (CheckSoundMem(OP) == 0)PlaySoundMem(OP, DX_PLAYTYPE_LOOP);
+	if (CheckSoundMem(OP) == 0)PlaySoundMem(OP, DX_PLAYTYPE_LOOP);//OPが再生中でなければ音を鳴らす
 	
 	//ゲームモード移行
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(OP) == 1) {	//Titleが再生中なら
-			StopSoundMem(OP);	//メモリに読み込んだTitleの音データを削除
-		}
+		if (CheckSoundMem(OP) == 1) StopSoundMem(OP);//Titleが再生中ならTitleを止める
 		GtskPtr = &GameTask::GameInit;
 	}
 	DrawString(0, 0, "GAME_TITLE", 0xffffff);
@@ -237,22 +235,22 @@ int GameTask::GameTitle(void)
 int GameTask::GameMain(void)
 {
 	ClsDrawScreen();
-	if (CheckSoundMem(Main) == 0)PlaySoundMem(Main, DX_PLAYTYPE_LOOP);
+	if (CheckSoundMem(Main) == 0)PlaySoundMem(Main, DX_PLAYTYPE_LOOP);//Mainが再生中でなければ音を鳴らす
 	
 	//サウンド関係
 	if (KeyMng::GetInstance().newKey[P1_UP]) {//↑キーが押されたとき
 		//ロケット噴射の音が再生中でなければロケット噴射の音を再生する
-		if (CheckSoundMem(Rocket) == 0)PlaySoundMem(Rocket, DX_PLAYTYPE_LOOP);
+		if (CheckSoundMem(Rocket) == 0)PlaySoundMem(Rocket, DX_PLAYTYPE_LOOP);//Rocketが再生中でなければ音を鳴らす
 	}
 	else {	//そうでなければ音を止める
-		StopSoundMem(Rocket);
+		StopSoundMem(Rocket);//Rocket音を止める
 	}
 
 	if (KeyMng::GetInstance().newKey[P1_SPACE]) {
-		if (CheckSoundMem(Boost) == 0)PlaySoundMem(Boost, DX_PLAYTYPE_BACK);
+		if (CheckSoundMem(Boost) == 0)PlaySoundMem(Boost, DX_PLAYTYPE_BACK);//Boostが再生中でなければ音を鳴らす
 	}
 	else {
-		StopSoundMem(Boost);
+		StopSoundMem(Boost);//Boost音を止める
 	}
 
 
@@ -324,9 +322,9 @@ int GameTask::GameMain(void)
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
 		if (CheckSoundMem(Main) == 1) {	//Mainが再生中なら
 			StopSoundMem(Main);	////メモリに読み込んだMainの音データを削除
-			StopSoundMem(Rocket);
-			StopSoundMem(Boost);
-			StopSoundMem(Bom);
+			StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
+			StopSoundMem(Boost);// Boostが再生中ならBoostの音を止める
+			StopSoundMem(Bom);	// Bomが再生中ならBomの音を止める
 		}
 		GtskPtr = &GameTask::GameResult;
 	}
@@ -412,8 +410,8 @@ int GameTask::GameMain(void)
 			//DrawBox(playerPos.x, playerPos.y, playerPos.x + 200, playerPos.y + 200, 0xffffff, true);
 			DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
 			DrawString((int)playerPos.x, (int)playerPos.y, "やられた", 0xffffff);
-			StopSoundMem(Rocket);	//ロケット噴射音を止める
-			StopSoundMem(Boost);	//ブーストの音を止める
+			StopSoundMem(Rocket);	//Rocket音を止める
+			StopSoundMem(Boost);	//Boost音を止める
 			if(CheckSoundMem(Bom) == 0)PlaySoundMem(Bom, DX_PLAYTYPE_BACK);//爆発音が鳴っているか調べてなっていなかったら鳴らす
 			// ここのif分
 			if (AnimCnt >= 11)
@@ -721,9 +719,9 @@ int GameTask::GameResult(void)
 	//DrawStringToHandle(result_x, result_y, "Result", 0xFFFFFF, Font);
 	DrawGraph(result_x, result_y, IMAGE_ID("image/ResultRogo.png"), true);
 	//サウンド
-	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);
-	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);
-	if (CheckSoundMem(Result) == 0)PlaySoundMem(Result, DX_PLAYTYPE_LOOP);
+	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
+	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
+	if (CheckSoundMem(Result) == 0)PlaySoundMem(Result, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
 
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
@@ -737,9 +735,7 @@ int GameTask::GameResult(void)
 		getSample = false;*/
 		StageCnt++;
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(Result) == 1) {	//Resultが再生中なら
-			StopSoundMem(Result);	//メモリに読み込んだResultの音データを削除
-		}
+		if (CheckSoundMem(Result) == 1)StopSoundMem(Result);	// Resultが再生中ならResultの音を止める
 		GtskPtr = &GameTask::GameInit;
 		if (StageCnt == StageMax)
 		{
@@ -776,10 +772,10 @@ int GameTask::GameOver(void)
 {
 
 	//サウンド
-	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);
-	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);
-	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);
-	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over,DX_PLAYTYPE_LOOP);
+	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
+	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
+	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// Mainが再生中ならMainの音を止める
+	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over,DX_PLAYTYPE_LOOP);//Overが再生中でなければ音を鳴らす
 	
 	
 	//PlaySoundMem(Over, DX_PLAYTYPE_LOOP);
@@ -795,9 +791,7 @@ int GameTask::GameOver(void)
 		returnFlag = false;
 		getSample = false;
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(Over) == 1) {	//Resultが再生中なら
-			//StopSoundMem(Over);	//メモリに読み込んだResultの音データを削除
-		}
+		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// Overが再生中ならOverの音を止める
 		GtskPtr = &GameTask::GameTitle;
 	}
 	if (KeyMng::GetInstance().trgKey[P1_SPACE])
@@ -810,6 +804,7 @@ int GameTask::GameOver(void)
 		landingFlag = false;
 		returnFlag = false;
 		getSample = false;
+		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// Overが再生中ならOverの音を止める
 		GtskPtr = &GameTask::GameInit;
 	}
 
