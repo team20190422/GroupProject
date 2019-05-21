@@ -96,8 +96,7 @@ int GameTask::GameInit(void)
 {
 	objList.clear();
 	bpList.clear();
-	InitSoundMem();		//メモリに読み込んだ音データをすべて削除する
-
+	
 	DrawString(0, 0, "INIT", 0xffff00);
 	GtskPtr = &GameTask::GameTitle;
 	player = AddObjlist(std::make_shared<Player>(lpKeyMng.trgKey,lpKeyMng.oldKey));
@@ -107,7 +106,9 @@ int GameTask::GameInit(void)
 	earth = AddBplist(std::make_shared<Earth>());
 	(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
 	(*obstracle)->init("image/meteo.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 0.5f);
+
 	//音楽ファイル読み込み
+	InitSoundMem();		//メモリに読み込んだ音データをすべて削除する
 	OP = LoadBGM("sound/uchuu-tanken .ogg");
 	Main = LoadBGM("sound/宇宙の佇み.ogg");
 	End = LoadBGM("sound/遊星.ogg");
@@ -121,7 +122,6 @@ int GameTask::GameInit(void)
 	UFOBoost = LoadSoundMem("sound/sf_energy2 .ogg");
 	UFOFlag = false;//隠しコマンド関係フラグ
 	BomFlag = false;//爆発フラグ
-
 	//フォント
 	InitFontToHandle();	//フォントデータをすべて削除する
 	Font = CreateFontToHandle("Segoe Print", 40, 3, DX_FONTTYPE_NORMAL);
@@ -134,9 +134,9 @@ int GameTask::GameTitle(void)
 	int Title_X = -500,Title_Y = 0;
 	//画像描画
 	DrawGraph(Title_X, Title_Y, IMAGE_ID("image/title.png"), true);
-	//タイトル文字描画
-	int title_x = 100,title_y = 100;
-	DrawStringToHandle(title_x, title_y, "Swing Bye", 0xFFFFFF, Font);
+	//タイトルロゴ描画
+	int title_x = 50,title_y = 50;
+	DrawGraph(title_x, title_y, IMAGE_ID("image/titleRogo.png"), true);
 	//サウンド関係
 	if(CheckSoundMem(OP)== 0)PlaySoundMem(OP, DX_PLAYTYPE_LOOP);
 	//隠しコマンド
@@ -145,11 +145,12 @@ int GameTask::GameTitle(void)
 	}
 	if (UFOFlag == true) {
 		(*player)->init("image/Player2.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
-		int ufo_x = 200, ufo_y = 100;
-		DrawGraph(ufo_x, ufo_y, IMAGE_ID("image/ufo.png"), true);
-		DrawString(170, 300, "UFO出現", GetColor(255, 255, 255));
+		int UFO_x = 150, UFO_y = 200;
+		DrawGraph(UFO_x, UFO_y, IMAGE_ID("image/ufo1.png"), true);
+		int ufo_x = 100, ufo_y = 350;
+		//DrawString(ufo_x,ufo_y, "UFO出現", GetColor(255, 255, 255));
+		DrawStringToHandle(ufo_x,ufo_y, "UFO　Arrival", 0xFFFFFF, Font);
 	}
-
 	//ゲームモード移行
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
@@ -305,9 +306,10 @@ int GameTask::GameResult(void)
 	int Result_X = -100,Result_Y = 0;
 	DrawGraph(Result_X,Result_Y, IMAGE_ID("image/result.png"), true);
 	//タイトル文字描画
-	int result_x = 150;
-	int result_y = 100;
-	DrawStringToHandle(result_x, result_y, "Result", 0xFFFFFF, Font);
+	int result_x = 50;
+	int result_y = 50;
+	//DrawStringToHandle(result_x, result_y, "Result", 0xFFFFFF, Font);
+	DrawGraph(result_x, result_y, IMAGE_ID("image/ResultRogo.png"), true);
 	//サウンド
 	if (CheckSoundMem(Rocket) == 1)DeleteSoundMem(Rocket);
 	if (CheckSoundMem(Bom) == 1)DeleteSoundMem(Bom);
