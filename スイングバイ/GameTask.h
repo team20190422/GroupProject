@@ -143,7 +143,14 @@ private:
 	int AnimTime = 0;
 	int checkCnt = 0;
 	int clearCnt = 0;				// ’…—¤¬Œ÷‚Ì–³“GŠÔ
+	int earthAnimCnt = 0;
+	int EarthImage[20] = { 0 };
+	int lgtsCnt = 0;
+	VECTOR3 pos = { 0,0 };
+
 	std::array<int, 2> landingCnt = { 255, 255 };
+
+	float earthSize = 5.0f;
 
 
 	//ÌßÚ²Ô°‚Ì“–‚½‚è”»’è‚ÌŠÇ—

@@ -144,7 +144,10 @@ int GameTask::SystemInit(void)
 		DieAnim[j] = LoadDivGraph("image/爆発_大.png", 11, 11, 1, 115, 100, DieAnim,true);
 		//DieAnim[j] = LoadGraph("image/爆発_大.png");
 	}
-
+	for (int i = 0; i < EarthMax; i++)
+	{
+		EarthImage[i] = LoadDivGraph("image/earthAnimNC.png", 20, 20, 1, 100, 50, EarthImage, true);
+	}
 	GtskPtr = &GameTask::GameTitle;
 	return 0;
 }
@@ -179,13 +182,21 @@ int GameTask::GameInit(void)
 int GameTask::GameTitle(void)
 {
 	ClsDrawScreen();
+	DrawGraph(0, 0, ImageMng::GetInstance().SetID("image/landBG.png"), true);
+	if ((lgtsCnt++ / 50) % 2 == 0)
+	{
+		//DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, 1, 0, ImageMng::GetInstance().SetID("image/LGTS.png"), true);
+	}
+	DrawGraph(0, 0, ImageMng::GetInstance().SetID("image/title.png"), true);
+	DrawRotaGraphF(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y - 100, earthSize, 0, EarthImage[(earthAnimCnt++ / 15) % 19], true);
 
 	//ゲームモード移行
-	if (KeyMng::GetInstance().trgKey[P1_ENTER])
+	if (KeyMng::GetInstance().trgKey[P1_SPACE])
 	{
+		
 		GtskPtr = &GameTask::GameInit;
 	}
-	DrawString(0, 0, "GAME_TITLE", 0xffffff);
+	//DrawString(0, 0, "GAME_TITLE", 0xffffff);
 	ScreenFlip();
 	return 0;
 }
@@ -575,10 +586,10 @@ int GameTask::GameLanding(void)
 	int a = GetLandCheck();
 	int b = GetCupLandCheck();
 	int c = darkFlag;
-	DrawString(0, 0, "GameLanding", 0xffffff);
-	DrawFormatString(0, 15, 0xffffff,"%d",a);
-	DrawFormatString(0, 32, 0xffffff, "%d", b);
-	DrawFormatString(0, 49, 0xffffff, "%d", c);
+	//DrawString(0, 0, "GameLanding", 0xffffff);
+	DrawFormatString(0, 80, 0xffffff,"%d",a);
+	DrawFormatString(0, 95, 0xffffff, "%d", b);
+	DrawFormatString(0, 110, 0xffffff, "%d", c);
 
 	// 条件達成したら宇宙へ戻る
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])

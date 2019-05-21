@@ -28,6 +28,7 @@ private:
 	int capsuleShield = 0;
 	int spCraft = 0;
 	int landMap = 0;
+	int suiheikei[2] = { 0 };
 	int capsulePara[10] = { 0 };
 	int capsuleParaL = 0;
 	int color = 0;
@@ -37,6 +38,7 @@ private:
 	int tmp;
 	int RGB[3] = {154,96,61 + 30};
 	int lrFlag = 0;										// -1:¶‰ñ“] 0:‰Šú’l 1:‰E‰ñ“]			
+	int speedUI = 0;
 	
 	float countF = 0.0f;
 	float size = 4.0f;

@@ -7,13 +7,7 @@ constexpr float PI = 3.1415;
 LandPlayer::LandPlayer(const int(&trgKey)[6], const int(&oldKey)[6]) :Obj(trgKey, oldKey)
 {
 	motherPos = { (float)SCREEN_SIZE_X / 2,  -20};
-	cupsule = LoadGraph("image/capsule.png");
-	planet = LoadGraph("image/MarsTest.png");
-	spCraft = LoadGraph("image/spCraft.png");
-	landMap = LoadGraph("image/landMap.png");
-	capsuleShield = LoadGraph("image/shield.png");
 	LoadDivGraph("image/capsuleParaAnim.png",10,10,1,15,30, capsulePara,true);
-	capsuleParaL = LoadGraph("image/capsuleParaL02.png");
 	pos = { 50,-500 };
 }
 
@@ -24,13 +18,14 @@ LandPlayer::~LandPlayer()
 
 void LandPlayer::Draw(void)
 {
+	DrawGraph(0, 0, ImageMng::GetInstance().SetID("image/landBG.png"), true);
 	if (lpGameTask.darkFlag == false)
 	{
 		color = GetColor(114, 56, 36);
 		DrawCircle(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y, 500, color, true);
 		if (injectionFlag == true)
 		{
-			DrawRotaGraph(cupPos.x, cupPos.y, size, 0, cupsule, true);
+			DrawRotaGraph(cupPos.x, cupPos.y, size, 0, ImageMng::GetInstance().SetID("image/capsule.png"), true);
 		}
 		else
 		{
@@ -70,11 +65,18 @@ void LandPlayer::Draw(void)
 				{
 				}
 				// ¸Þ×ÃÞ°¼®Ý‚³‚¹‚é
-				DrawLine(0, i, SCREEN_SIZE_X, i, GetColor(RGB[0],RGB[1],RGB[2]), true);
+				DrawLine(0, i, SCREEN_SIZE_X, i, GetColor(RGB[0], RGB[1], RGB[2]), true);
 			}
-			DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, 3, 0, landMap, true);
-			DrawRotaGraph(pos.x, pos.y + 45, 1.5, spCAngleF, spCraft, true);
-			DrawRotaGraph(paraPos.x, paraPos.y, 1.5, paraAngle, capsuleParaL, true);
+			DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, 3, 0, ImageMng::GetInstance().SetID("image/landMap.png"), true);
+			DrawGraph(105, 44, ImageMng::GetInstance().SetID("image/sokudoUI.png"), true);
+			DrawGraph(95, 56, ImageMng::GetInstance().SetID("image/speedUI_under.png"), true);
+			DrawGraph(100, 77, ImageMng::GetInstance().SetID("image/kyoriUI.png"), true);
+			DrawGraph(65, 89, ImageMng::GetInstance().SetID("image/speedUI_under.png"), true);
+			DrawRotaGraph(60, 60, 2, spCAngleF, ImageMng::GetInstance().SetID("image/suihei01.png"), true);
+			DrawRotaGraph(60, 60, 2, 0, ImageMng::GetInstance().SetID("image/suihei02.png"), true);
+			DrawRotaGraph(60, 60, 1.2, spCAngleF, ImageMng::GetInstance().SetID("image/spCraft.png"), true);
+			DrawRotaGraph(pos.x, pos.y + 45, 1.5, spCAngleF, ImageMng::GetInstance().SetID("image/spCraft.png"), true);
+			DrawRotaGraph(paraPos.x, paraPos.y, 1.5, paraAngle, ImageMng::GetInstance().SetID("image/capsuleParaL02.png"), true);
 		}
 		else if(pos.y > 0)
 		{
@@ -94,12 +96,13 @@ void LandPlayer::Draw(void)
 		if (shieldFlag)
 		{
 			DrawRotaGraph(pos.x, pos.y, 2.5, angle, capsulePara[anim], true);
-			DrawRotaGraph(shieldPos.x, shieldPos.y, 2.5, shieldAngle, capsuleShield, true);
+			DrawRotaGraph(shieldPos.x, shieldPos.y, 2.5, shieldAngle, ImageMng::GetInstance().SetID("image/shield.png"), true);
 		}
 	}
 
 	//DrawFormatString(0, 15, 0xffffff, "motherPos.x:%f,motherPos.y:%f", motherPos.x, motherPos.y);
 	//DrawFormatString(0, 30, 0xffffff, "cupPos.x:%f,cupPos.y:%f", cupPos.x, cupPos.y);
+	//DrawFormatString(0, 45, 0xffffff, "speed:%f", speed);
 }
 
 void LandPlayer::Update(void)
@@ -221,17 +224,23 @@ void LandPlayer::Update(void)
 void LandPlayer::SetMove(void)
 {
 	pos.x += vx;
-	pos.y += vy;
+	pos.y += vy * speed;
 	spCAngleF += spCAngle + rolInc;
 	if (KeyMng::GetInstance().newKey[P1_UP])
 	{
-		speed += 0.001f;
+		if (speed < 1.0f)
+		{
+			speed += 0.003f;
+		}
 		vx = sin(spCAngleF) * speed;
 		vy = -cos(spCAngleF) * speed;
 	}
 	else
 	{
-		speed -= 0.001f;
+		if (speed > -1.0f)
+		{
+			speed -= 0.003f;
+		}
 	}
 	if (KeyMng::GetInstance().newKey[P1_RIGHT])
 	{
