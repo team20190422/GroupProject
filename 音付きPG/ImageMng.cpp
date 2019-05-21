@@ -16,6 +16,7 @@ const int& ImageMng::SetID(std::string fileName)
 	return imgMap[fileName]; //“o˜^‚µ‚½ID‚ğ•Ô‚·(¸”s‚Í-1)
 
 }
+
 //-----‰æ‘œ“o˜^(ƒAƒjƒ[ƒVƒ‡ƒ“)
 const VEC_INT& ImageMng::SetID(std::string idName, std::string fileName, VECTOR2 divSize, VECTOR2 divNum)
 {

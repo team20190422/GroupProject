@@ -107,9 +107,6 @@ int GameTask::GameInit(void)
 	earth = AddBplist(std::make_shared<Earth>());
 	(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
 	(*obstracle)->init("image/meteo.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 0.5f);
-	//画像読み込み
-	ImageMng::GetInstance().SetID2("Title", "image/title.png");//タイトル
-	ImageMng::GetInstance().SetID2("Result", "image/result.png");//リザルト
 	//音楽ファイル読み込み
 	OP = LoadBGM("sound/uchuu-tanken .ogg");
 	Main = LoadBGM("sound/宇宙の佇み.ogg");
@@ -134,13 +131,11 @@ int GameTask::GameInit(void)
 
 int GameTask::GameTitle(void)
 {
-	int Title_X = -500;
-	int Title_Y = 0;
+	int Title_X = -500,Title_Y = 0;
 	//画像描画
-	ImageMng::GetInstance().DrawImage("Title", Title_X, Title_Y, true);
+	DrawGraph(Title_X, Title_Y, IMAGE_ID("image/title.png"), true);
 	//タイトル文字描画
-	int title_x = 100;
-	int title_y = 100;
+	int title_x = 100,title_y = 100;
 	DrawStringToHandle(title_x, title_y, "Swing Bye", 0xFFFFFF, Font);
 	//サウンド関係
 	if(CheckSoundMem(OP)== 0)PlaySoundMem(OP, DX_PLAYTYPE_LOOP);
@@ -150,6 +145,8 @@ int GameTask::GameTitle(void)
 	}
 	if (UFOFlag == true) {
 		(*player)->init("image/Player2.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
+		int ufo_x = 200, ufo_y = 100;
+		DrawGraph(ufo_x, ufo_y, IMAGE_ID("image/ufo.png"), true);
 		DrawString(170, 300, "UFO出現", GetColor(255, 255, 255));
 	}
 
@@ -305,9 +302,8 @@ int GameTask::GameMain(void)
 int GameTask::GameResult(void)
 {
 	//画像描画
-	int Result_X = -100;
-	int Result_Y = 0;
-	ImageMng::GetInstance().DrawImage("Result", Result_X, Result_Y, true);
+	int Result_X = -100,Result_Y = 0;
+	DrawGraph(Result_X,Result_Y, IMAGE_ID("image/result.png"), true);
 	//タイトル文字描画
 	int result_x = 150;
 	int result_y = 100;
