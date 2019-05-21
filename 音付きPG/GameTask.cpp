@@ -133,7 +133,7 @@ int GameTask::SystemInit(void)
 	OP = LoadBGM("sound/uchuu-tanken .ogg");
 	Main = LoadBGM("sound/宇宙の佇み.ogg");
 	Result = LoadBGM("sound/遊星.ogg");
-	Over = LoadBGM("sound/宇宙空間.ogg");
+	Over = LoadBGM("sound/宇宙空間 .ogg");
 	SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMPRESS);	// 圧縮された全データはシステムメモリに格納され、再生する部分だけ逐次解凍しながらサウンドメモリに格納する(鳴らし終わると解凍したデータは破棄されるので何度も解凍処理が行われる)
 	Decision = LoadSoundMem("sound/選択音.ogg");
 	Rocket = LoadSoundMem("sound/ロケット噴射.ogg");
@@ -465,7 +465,6 @@ int GameTask::GameMain(void)
 			// ﾐｯｼｮﾝｸﾘｱ
 			if (returnFlag && clearCheck && landingCheck && landingFlag)
 			{
-
 				// ﾐｯｼｮﾝｸﾘｱ
 				GtskPtr = &GameTask::GameResult;
 			}
@@ -780,7 +779,10 @@ int GameTask::GameOver(void)
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);
-	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over, DX_PLAYTYPE_LOOP);
+	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over,DX_PLAYTYPE_LOOP);
+	
+	
+	//PlaySoundMem(Over, DX_PLAYTYPE_LOOP);
 	
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
@@ -794,7 +796,7 @@ int GameTask::GameOver(void)
 		getSample = false;
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
 		if (CheckSoundMem(Over) == 1) {	//Resultが再生中なら
-			StopSoundMem(Over);	//メモリに読み込んだResultの音データを削除
+			//StopSoundMem(Over);	//メモリに読み込んだResultの音データを削除
 		}
 		GtskPtr = &GameTask::GameTitle;
 	}
