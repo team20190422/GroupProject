@@ -34,6 +34,8 @@ VECTOR3 operator +(const VECTOR3& i, const VECTOR3& j);
 VECTOR3 operator +(float j, const VECTOR3& i);
 // VECTOR3 - VECTOR3
 VECTOR3 operator -(const VECTOR3& i, const VECTOR3& j);
+// VECTOR3 * VECTOR3
+VECTOR3 operator *(const VECTOR3& i, const VECTOR3& j);
 // float * VECTOR3
 VECTOR3 operator *(float j, const VECTOR3& i);
 // VECTOR3 *float

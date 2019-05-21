@@ -1,9 +1,10 @@
-#include <DxLib.h>
 #include "Earth.h"
 #include "GameTask.h"
 
-Earth::Earth()
+
+Earth::Earth(VECTOR3 pos)
 {
+	mPos = pos;
 	Init();
 }
 
@@ -12,27 +13,57 @@ Earth::~Earth()
 {
 }
 
-void Earth::Init()
+void Earth::Init(void)
 {
-	image = LoadGraph("image/EarthTest.png");
-	r = (float)BasePlanet::GetRadius(image);
-	pos = { 220, 650 };
+	earthSize = 5.0;
+	pos = mPos;
+	for (int i = 0; i < EarthMax; i++)
+	{
+
+		EarthImage[i] = LoadDivGraph("image/earthAnimNC.png", 20, 20, 1, 100, 50, EarthImage, true);
+			//LoadGraph("image/earthAnimNC.png");
+
+	}
+	Size = (float)BasePlanet::GetRadius(EarthImage[0]) * ((float)earthSize/ 2);
 }
 
-void Earth::Update()
+void Earth::Update(void)
 {
-	pos = pos + lpGameTask.GetScrollPos();
-	if (BasePlanet::PlanetFactry(g, r, pos))
+
+	unsigned int rSize = (PLAYER_SIZE / 2);
+	VECTOR3 playerPosR(lpGameTask.playerPos.x + rSize, lpGameTask.playerPos.y + rSize);
+
+	if (!lpGameTask.plPosMaxFlag)
 	{
-		lpGameTask.SetHitCheck(true);
+		pos = pos + lpGameTask.GetScrollPos();
 	}
-	else
+
+	for (float i = 0.0f; i < 16 ; i+= 0.1f)
 	{
-		lpGameTask.SetHitCheck(false);
+		VECTOR3 radianPos(pos.x + (Size * cos(i / 2)), pos.y + (Size * sin(i / 2)));
+
+		DrawBox(radianPos.x - rSize, radianPos.y - rSize, radianPos.x + rSize, radianPos.y + rSize, GetColor(255, 0, 0), true);
+		if (playerPosR.x > radianPos.x - rSize && lpGameTask.playerPos.x < radianPos.x + rSize)
+		{
+
+			if (playerPosR.y > radianPos.y - rSize && lpGameTask.playerPos.y < radianPos.y + rSize)
+			{
+				lpGameTask.SetLandCheck(true);
+				lpGameTask.returnFlag = true;
+			}
+		}
 	}
+
+	if (BasePlanet::PlanetFactry(gravity, r, pos) && !lpGameTask.GetLandCheck())
+	{
+	}
+
+
 }
 
-void Earth::Draw()
+void Earth::Draw(void)
 {
-	DrawRotaGraphF(pos.x, pos.y, 1.0, 0, image, true);
+
+	DrawRotaGraphF(pos.x, pos.y, earthSize, 0, EarthImage[(animCnt++ / 15) % 19], true);
+
 }

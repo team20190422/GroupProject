@@ -10,12 +10,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// ---------- ｹﾞｰﾑﾙｰﾌﾟ
 	while (ProcessMessage() == 0 && CheckHitKey(KEY_INPUT_ESCAPE) == 0)
 	{
-		ClsDrawScreen();
-
 		GameTask::GetInstance().GameUpdate();
 
-		ScreenFlip();
-		
 	}
 	InitSoundMem();	//すべておサウンドハンドルを削除する
 	DxLib_End();
