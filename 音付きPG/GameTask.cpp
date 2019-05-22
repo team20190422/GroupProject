@@ -839,7 +839,6 @@ int GameTask::GameOver(void)
 		landingFlag = false;
 		returnFlag = false;
 		getSample = false;
-		UFOFlag = false;
 		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// Over‚ªÄ¶’†‚È‚çOver‚Ì‰¹‚ğ~‚ß‚é
 		GtskPtr = &GameTask::GameInit;
 	}
