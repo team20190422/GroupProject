@@ -38,6 +38,7 @@ void BackGround::Init()
 			randomY = GetRand(SCREEN_SIZE_Y) + 800;
 		}
 	}
+	
 }
 
 void BackGround::Update()
@@ -46,7 +47,7 @@ void BackGround::Update()
 	{
 		vyS += 0.1f;
 		vyM += 0.2f;
-		if (randomY + vyS > SCREEN_SIZE_Y || randomY + (vyM / 2)  > SCREEN_SIZE_Y)
+		if (randomY + vyS > SCREEN_SIZE_Y || randomY + (vyM / 2) > SCREEN_SIZE_Y)
 		{
 			removeFlag = true;
 		}
@@ -64,29 +65,13 @@ void BackGround::Update()
 
 void BackGround::Draw()
 {
-	//if (randomY % 17 == 0)
-	//{
-	//	col = GetColor(255, 0, 0);
-	//}
-	//else if (randomY % 27 == 0)
-	//{
-	//	col = GetColor(255, 255, 0);
-	//}
-	//else if (randomY % 37 == 0)
-	//{
-	//	col = GetColor(0, 0, 255);
-	//}
-	//else
-	
-	{
-		col = GetColor(255, 255, 255);
-	}
+	//int col = GetRand(255);
 	if (randomX % 2 == 0)
 	{
-		DrawCircle(randomX, randomY + vyS, 1, col, true);
+		DrawCircle(randomX, randomY + vyS, 1, GetColor(255,255,255), true);
 	}
 	else if(randomX % 3 == 0)
 	{
-		DrawCircle(randomX, randomY + vyM, 2,col, true);
+		DrawCircle(randomX, randomY + vyM, 2, GetColor(255,255,255), true);
 	}	
 }

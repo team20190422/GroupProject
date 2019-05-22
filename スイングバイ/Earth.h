@@ -14,8 +14,10 @@ private:
 	double earthSize = 3.0;
 	float Size = 0;
 	int EarthImage[EarthMax] = { 0 };
+	int planetImage = 0;
 	int earthCnt = 0;
 	int animCnt = 0;
+	float gravity = 0.0f;
 
 protected:
 	void Init(void);

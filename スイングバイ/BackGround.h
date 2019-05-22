@@ -21,8 +21,6 @@ private:
 	float vyM = 0;
 	int randomX;
 	int randomY;
-	int randomY_2;
 	int count;
-	int col;
 	const int(&j)[6] = { 0 };
 };

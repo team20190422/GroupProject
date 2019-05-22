@@ -86,10 +86,12 @@ public:
 	bool setCount = false;
 
 	float distance = 0;
+	float gravity = 0.0f;
 
 	//À°¹Ş¯Ä
 	VECTOR3 targetPos = { 0,0 };
 	VECTOR3 targetVec = { 0,0 };
+	float targetDistance = 0.0f;
 	float targetSize = 0;
 
 	// ÌßÚ²Ô°
@@ -103,6 +105,7 @@ public:
 	bool returnFlag = false;				// ÌßÚ²Ô°‚ª’n‹…‚É‹AŠÒ¬Œ÷‚µ‚½‚ÌÌ×¸Ş
 	bool getSample = false;					// ÌßÚ²Ô°‹AŠÒ‚É–Ú•W‚Ì˜f¯‚É“’B‚µ‚½‚©‚ÌÌ×¸Ş
 	bool plPosMaxFlag = false;				// ÌßÚ²Ô°‚ÌYÀ•W‚ª‰º‘¤‚ÌŒÀŠE‚É’B‚µ‚½‚ç
+	bool clearCheck = false;				// ˜f¯‚Ì’…—¤‚É¬Œ÷‚µ‚½Ì×¸Ş
 
 	bool darkFlag = false;					// ˆÃ“]Ì×¸Ş
 
@@ -118,6 +121,7 @@ private:
 	int GameLanding(void);			//’…—¤
 	int GameResult(void);
 	int GameOver(void);
+	int GameClear(void);
 
 	int (GameTask::*GtskPtr)(void);
 
@@ -131,6 +135,7 @@ private:
 	bp_List bpList;
 	std::list<bp_ptr>::iterator earth;
 	std::list<bp_ptr>::iterator mars;
+	std::list<bp_ptr>::iterator asteroid;
 
 	// int
 	// ·°ŠÖŒW
@@ -138,35 +143,47 @@ private:
 	int Energy = { 0 };
 	int time = 0;
 
-	int DieAnim[11] = { 0 };
+	int DieAnim[12] = { 0 };
+	int OutScrAnim[11] = { 0 };
 	int AnimCnt = 0;
 	int AnimTime = 0;
 	int checkCnt = 0;
 	int clearCnt = 0;				// ’…—¤¬Œ÷‚Ì–³“GŠÔ
+	int MarsCnt = 0;
 	int earthAnimCnt = 0;
 	int EarthImage[20] = { 0 };
 	int lgtsCnt = 0;
 	VECTOR3 pos = { 0,0 };
 
-	std::array<int, 2> landingCnt = { 255, 255 };
-
-	float earthSize = 5.0f;
+	// »ÌŞÀ²ÄÙ
+	int subTitleCnt = 0;
+	int subTitleAnim = 0;
+	bool subTitleFlag = false;
+	std::array<int, 3> landingCnt = { 255, 255,255 };
 
 
 	//ÌßÚ²Ô°‚Ì“–‚½‚è”»’è‚ÌŠÇ—
 	bool hitCheck = false;					// ˜f¯‚É’…—¤‚¹‚¸‚ÉÕ“Ë‚µ‚½Ì×¸Ş
 	bool landingCheck = false;				// –Ú•W‚Ì˜f¯‚É“’B‚µ‚½Ì×¸Ş
-	bool clearCheck = false;				// ˜f¯‚Ì’…—¤‚É¬Œ÷‚µ‚½Ì×¸Ş
 	bool cupLandingCheck = false;			// ¶Ìß¾Ù‚Ìsize‚ª0‚É‚È‚Á‚½‚©Ì×¸Ş
+
 	bool energyAnim = false;
 	bool landAnimFlag = false;
 	bool darkFlag2 = false;
+	bool pushSpace = false;
+	bool lightFlag = false;
 
-	int limitTime = 10;
-	int limitAnimSize = 60;
+	// ‚±‚±‚©‚ç
+	int limitTime = 4;
+	float limitAnimSize = 2.0f;
+	float earthSize = 5.0f;
+	float rocketSize = 0.0f;
+
 	int GameOverTime = 0;
 	int outScreenTime = 0;
 
-	int StageCnt = 1;
+	int StageCnt = 0;
+	// ‚±‚±‚Ü‚Å
+	VECTOR3 rocketPos = { SCREEN_SIZE_X / 2,SCREEN_SIZE_Y - 150 };
 
 };
