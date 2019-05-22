@@ -22,5 +22,5 @@ private:
 	int randomX;
 	int randomY;
 	int count;
-	const int(&j)[6] = { 0 };
+	const int(&j)[7] = { 0 };
 };

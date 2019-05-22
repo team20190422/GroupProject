@@ -21,8 +21,8 @@ public:
 	int time = 0;
 
 private:
-	const int(&trgKey)[6] = { 0 };
-	const int(&oldKey)[6] = { 0 };
+	const int(&trgKey)[7] = { 0 };
+	const int(&oldKey)[7] = { 0 };
 	std::weak_ptr<Player> target;
 
 	VECTOR3 pos = { 0,0 };

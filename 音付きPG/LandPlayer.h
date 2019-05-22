@@ -6,7 +6,7 @@ class LandPlayer :
 	public Obj
 {
 public:
-	LandPlayer(const int(&trgKey)[6], const int(&oldKey)[6]);
+	LandPlayer(const int(&trgKey)[7], const int(&oldKey)[7]);
 	~LandPlayer();
 
 	void Draw(void);

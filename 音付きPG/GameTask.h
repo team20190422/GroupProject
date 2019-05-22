@@ -159,9 +159,9 @@ private:
 	//音楽関係
 	int OP, Main, Result,Over;	//BGM
 	int Decision, Cancel, Rocket, Bom, Boost;
-	//フォント関係
-	int Font;//フォントハンドル
-
+	//隠しコマンド関係
+	int UFO;
+	bool UFOFlag = false;
 	// ここから
 	int limitTime = 4;
 	float limitAnimSize = 2.0f;

@@ -118,6 +118,5 @@ void Mars::Draw()
 	DrawRotaGraph(SCREEN_SIZE_X - 50, 100, 0.5, 0, image, true);
 	DrawRotaGraphF(pos.x, pos.y,1.0,0,image, true);
 
-
 	//DrawGraph(pos.x, pos.y, image, true);
 }

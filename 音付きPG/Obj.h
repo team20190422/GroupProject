@@ -13,7 +13,7 @@ class Obj
 {
 public:
 	Obj();
-	Obj(const int (&trgKey)[6], const int (&oldKey)[6]);
+	Obj(const int (&trgKey)[7], const int (&oldKey)[7]);
 	~Obj();
 	
 	void init(std::string filname, VECTOR2 divSize, VECTOR2 divCnt, VECTOR2 chipOffset, float speed);

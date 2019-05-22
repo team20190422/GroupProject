@@ -18,7 +18,7 @@ private:
 	};
 
 	int width, hight;
-	const int(&j)[6] = { 0 };
+	const int(&j)[7] = { 0 };
 	VECTOR3 playerPos = { 0,0 };
 	VECTOR3 playerPosC = { 0,0 };		// playerPos‚Ì’†SÀ•W
 	float playerAngle = 0.0f;

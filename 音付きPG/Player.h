@@ -23,7 +23,7 @@ class Player :
 	public Obj
 {
 public:
-	Player(const int (&trgKey)[6], const int (&oldKey)[6]);
+	Player(const int (&trgKey)[7], const int (&oldKey)[7]);
 	~Player();
 
 	void Draw(void);

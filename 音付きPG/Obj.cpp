@@ -7,7 +7,7 @@ Obj::Obj()
 {
 }
 
-Obj::Obj(const int(&trgKey)[6], const int(&oldKey)[6])
+Obj::Obj(const int(&trgKey)[7], const int(&oldKey)[7])
 {
 }
 

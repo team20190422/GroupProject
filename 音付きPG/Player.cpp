@@ -6,7 +6,7 @@ constexpr unsigned int posY_Max = (float)SCREEN_SIZE_Y - (float)SCREEN_SIZE_Y / 
 VECTOR2 dsize = { 80,65 };
 VECTOR2 dnum = { 9,1 };
 
-Player::Player(const int(&trgKey)[6], const int(&oldKey)[6]) :Obj(trgKey, oldKey)
+Player::Player(const int(&trgKey)[7], const int(&oldKey)[7]) :Obj(trgKey, oldKey)
 {
 	particleList.clear();
 	MaxFlag = false;

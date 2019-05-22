@@ -2,7 +2,7 @@
 #include "ImageMng.h"
 
 
-LandPlayer::LandPlayer(const int(&trgKey)[6], const int(&oldKey)[6]) :Obj(trgKey, oldKey)
+LandPlayer::LandPlayer(const int(&trgKey)[7], const int(&oldKey)[7]) :Obj(trgKey, oldKey)
 {
 	pos = { (float)SCREEN_SIZE_X / 2, (float)SCREEN_SIZE_Y / 4 };
 }
