@@ -162,7 +162,6 @@ int GameTask::GameInit(void)
 		returnFlag = false;
 		getSample = false;
 		subTitleFlag = false;
-
 	};
 	//
 
@@ -195,9 +194,8 @@ int GameTask::GameInit(void)
 	}
 
 	(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
-	//(*obstracle)->init("image/meteo.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 0.5f);
+	(*obstracle)->init("image/meteo.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 0.5f);
 
-	//ImageMng::GetInstance().SetID("TITLE", "image/タイトル.png");
 	back = new BackGround();
 
 	GtskPtr = &GameTask::GameMain;
@@ -416,7 +414,6 @@ int GameTask::GameMain(void)
 			// ここのif分
 			if (AnimCnt >= 11)
 			{
-				
 				GameOver();
 			}
 		}
@@ -424,8 +421,6 @@ int GameTask::GameMain(void)
 		if (landingCheck && landingFlag)
 		{
 			SetHitCheck(false);
-
-			
 		}
 	}
 	// 背景の削除
@@ -447,9 +442,28 @@ int GameTask::GameMain(void)
 
 	//矩形の当たり判定
 	if (HitCheck((*player)->GetRect(), (*obstracle)->GetRect()) == true) {
-		//(*player)->SetDeathFlag(true);
-		//BomFlag = true;
+		hitCheck = true;
 	}
+
+	if (hitCheck == true) {	//プレイヤーが死んだとき
+		StopSoundMem(Rocket);	//Rocket音を止める
+		StopSoundMem(Boost);	//Boost音を止める
+		//爆発音が再生中でなければ爆発音を再生する
+		if (AnimTime++ % 10 == 0)
+		{
+			AnimCnt++;
+		}
+		DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
+		if (CheckSoundMem(Bom) == 0)PlaySoundMem(Bom, DX_PLAYTYPE_BACK);//Bomが再生中でなければ音を鳴らす
+		if (AnimCnt >= 11)
+		{
+			GameOver();
+		}
+	}
+	else {
+		StopSoundMem(Bom);	//Bom音を止める
+	}
+
 
 	// 着陸成功時
 	if (landingCheck && landingFlag)

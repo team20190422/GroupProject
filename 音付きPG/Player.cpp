@@ -3,6 +3,8 @@
 #include "Particle.h"
 
 constexpr unsigned int posY_Max = (float)SCREEN_SIZE_Y - (float)SCREEN_SIZE_Y / 3;
+VECTOR2 dsize = { 80,65 };
+VECTOR2 dnum = { 9,1 };
 
 Player::Player(const int(&trgKey)[6], const int(&oldKey)[6]) :Obj(trgKey, oldKey)
 {
@@ -62,7 +64,7 @@ void Player::Draw(void)
 	}
 
 	DrawRotaGraph(pos.x, pos.y, Size, Angle, IMAGE_ID(imageName), true);
-
+	
 	if (pos.x < -32)
 	{
 		lpGameTask.OutOfScreen = true;
@@ -206,7 +208,6 @@ RECT  &Player::GetRect()
 {
 	return this->p;
 }
-
 
 VECTOR3 Player::Abstract(VECTOR3 i)
 {
