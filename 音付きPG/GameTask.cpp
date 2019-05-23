@@ -132,7 +132,7 @@ int GameTask::SystemInit(void)
 	//音楽ファイル読み込み
 	OP = LoadBGM("sound/uchuu-tanken .ogg");
 	Main = LoadBGM("sound/宇宙の佇み.ogg");
-	Result = LoadBGM("sound/遊星.ogg");
+	Result = LoadBGM("sound/世界が僕達に揺れるまで.mp3");
 	Over = LoadBGM("sound/宇宙空間.ogg");
 	SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMPRESS);	// 圧縮された全データはシステムメモリに格納され、再生する部分だけ逐次解凍しながらサウンドメモリに格納する(鳴らし終わると解凍したデータは破棄されるので何度も解凍処理が行われる)
 	Decision = LoadSoundMem("sound/選択音.ogg");
@@ -144,7 +144,6 @@ int GameTask::SystemInit(void)
 	GtskPtr = &GameTask::GameTitle;
 	return 0;
 }
-
 
 int GameTask::GameInit(void)
 {
@@ -239,6 +238,10 @@ int GameTask::GameTitle(void)
 		GtskPtr = &GameTask::GameInit;
 	}
 	DrawString(0, 0, "GAME_TITLE", 0xffffff);
+	SetFontSize(40);
+	ChangeFont("Ailerons");
+	DrawString(80,300, "START EnterKey", 0xffff00);
+
 	ScreenFlip();
 	return 0;
 }
@@ -352,7 +355,6 @@ int GameTask::GameMain(void)
 	}
 
 	std::vector<BackGround*>::iterator itrBG = backVec.begin();
-
 
 	if (count <= 300)
 	{
@@ -470,6 +472,9 @@ int GameTask::GameMain(void)
 	//矩形の当たり判定(メテオ)
 	if (HitCheck((*player)->GetRect(), (*obstracle)->GetRect()) == true) {
 		hitCheck = true;
+		if (GetLandCheck() == true) {
+			hitCheck = false;
+		}
 	}
 	//プレイヤーがメテオと当たった時の処理
 	if (hitCheck == true) {	
@@ -688,7 +693,15 @@ int GameTask::GameLandInit(void)
 {
 	landPlayer = AddObjlist(std::make_shared<LandPlayer>(lpKeyMng.trgKey, lpKeyMng.oldKey));
 
-	(*landPlayer)->init("image/playerBeforeLanding.png", VECTOR2(44 / 1, 22 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
+	if (UFOFlag == true) {
+		
+		(*landPlayer)->init("image/ufo(side).png", VECTOR2(128 / 1, 128 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
+	}
+	else {
+		//(*landPlayer)->init("image/playerBeforeLanding.png", VECTOR2(44 / 1, 22 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
+		(*landPlayer)->init("image/player.png", VECTOR2(32 / 1, 32 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
+	}
+	
 
 
 	GtskPtr = &GameTask::GameLanding;
@@ -761,6 +774,7 @@ int GameTask::GameResult(void)
 	DrawGraph(result_x, result_y, IMAGE_ID("image/ResultRogo.png"), true);
 	//サウンド処理
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
+	ChangeVolumeSoundMem(200, Result);//Resultの音のボリュームをセット
 	if (CheckSoundMem(Result) == 0)PlaySoundMem(Result, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
 
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
