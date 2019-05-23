@@ -65,6 +65,9 @@ private:
 	VECTOR3 gVec = { 0,0 };								// 重力
 	VECTOR3 PreVec = { 0,0 };
 	VECTOR3 plPos = { 0,0 };
+	VECTOR3 warningPosUp = { -450,0 };
+	VECTOR3 warningPosDw = { -450,0 };
+
 	float count = -3.0f;								//　前方座標のｵﾌｾｯﾄ
 	float rolInc = 0.0f;
 	float Size = 1.0f;										// ｻｲｽﾞ
@@ -74,6 +77,9 @@ private:
 	float EofG = 1.5f;									// 重力の影響
 	int sideCheck = 0;									// 左右のﾊﾟｰﾃｨｸﾙのﾁｪｯｸ
 	bool MaxFlag = false;
+	bool WarningDownFlag = false;
+	bool lineFlag = false;
+
 	int lrFlag = 0;
 	VECTOR3 newPos = { 0,0 };
 	VECTOR3 newPrePos = { 0,0 };
@@ -83,7 +89,17 @@ private:
 	float PreAngle;
 	float PreAngle2;
 
-	int energy = 1000;
+	float energy = 100;
 	int landingTime = 0;
+
+	int warningDown = 0;
+	int blackLine = 0;
+	int lineCnt = 0;
+
+	int blSize = 0;
+	VECTOR3 linePos = { 0.0f,0.0f };
+
+	std::vector<VECTOR3> BlackLine = { VECTOR3(10,0) };
+
 };
 

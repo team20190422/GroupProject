@@ -44,11 +44,6 @@ void Player::Draw(void)
 		sidePos.y = pos.y + (13 * sin(count / 2));
 	}
 
-	//DrawFormatString(10, 160, GetColor(255, 255, 255), "sideCheck　%d", sideCheck);
-
-
-	//DrawFormatString(10, 650, GetColor(255, 255, 255), "count　%f", count);
-
 	for (auto itr : particleList)
 	{
 		itr->Draw();
@@ -103,18 +98,22 @@ void Player::Draw(void)
 	ChangeFont("Ailerons");
 
 	// システムUI
-	DrawGraph(10, 40, IMAGE_ID("image/speedUI_Left.png"), true);
-	DrawGraph(10, 70, IMAGE_ID("image/speedUI_Left.png"), true);
-	DrawBox(15, 120, 15 + (energy / 7), 130, GetColor(255, 55 + (energy / 5), 55 + (energy / 5)), true);
-	DrawGraph(10, 100, IMAGE_ID("image/engine.png"), true);
+	DrawGraph(105, 75, IMAGE_ID("image/speedUI_under.png"), true);
+	DrawGraph(105, 105, IMAGE_ID("image/speedUI_under.png"), true);
+	DrawBox(110, 155, 110 + (energy * 1.4f), 160, GetColor(255, 55 + (energy / 5), 55 + (energy / 5)), true);
+	DrawGraph(105, 135, IMAGE_ID("image/engine_under.png"), true);
 
-	DrawExtendGraph(5, 35, 145, 65, IMAGE_ID("image/speed.png"), true);
-	DrawExtendGraph(-50, 70, 90, 110, IMAGE_ID("image/distance.png"), true);
-	DrawExtendGraph(5, 100, 145, 150, IMAGE_ID("image/fuel.png"), true);
+	//DrawExtendGraph(5, 35, 145, 65, IMAGE_ID("image/speed.png"), true);
+	//DrawExtendGraph(-50, 70, 90, 110, IMAGE_ID("image/distance.png"), true);
+	//DrawExtendGraph(5, 100, 145, 150, IMAGE_ID("image/fuel.png"), true);
 
-	DrawFormatString(90, 30, GetColor(255, 255, 255), ":%.2f", speed);
-	DrawFormatString(70, 60, GetColor(255, 255, 255), ":%d", (int)lpGameTask.targetDistance);
-	DrawFormatString(60, 95, GetColor(255, 255, 255), ":%d", energy);
+	DrawGraph(100, 63, IMAGE_ID("image/sokudoUI.png"), true);
+	DrawGraph(100, 93, IMAGE_ID("image/kyoriUI.png"), true);
+	DrawGraph(100, 123, IMAGE_ID("image/nenryouUI.png"), true);
+
+	DrawFormatString(175, 68, GetColor(255, 255, 255), "%.0fkm/s", speed * 4);
+	DrawFormatString(175, 98, GetColor(255, 255, 255), "%dkm", (int)lpGameTask.targetDistance);
+	DrawFormatString(200, 128, GetColor(255, 255, 255), "%.0fl", energy);
 
 
 	SetFontSize(20);		// ﾌｫﾝﾄのｻｲｽﾞ
@@ -140,8 +139,6 @@ void Player::Update(void)
 	newPos.x = (pos.x) + (50 * cos(newcount / 2));
 	newPos.y = (pos.y) + (50 * sin(newcount / 2));
 
-	DrawFormatString(10, 700, 0xffffff, "Angle1:%f Angle2:%f", PreAngle, PreAngle2);
-	DrawFormatString(10, 750, 0xffffff, "newcount:%f", newcount);
 
 	p.left = (long)(pos.x - size.x / 2);
 	p.right = (long)(pos.x + size.x / 2);
@@ -193,12 +190,74 @@ void Player::Update(void)
 		gVec = VECTOR3(0,0);
 
 	}
+
+	if (energy < 20)
+	{
+		WarningDownFlag = true;
+		warningPosUp.x += 1;
+		//if (warningPosUp.x > SCREEN_SIZE_X)
+		//{
+		//	warningPosUp.x = -450;
+		//	DrawGraph(warningPosUp.x, warningPosUp.y, IMAGE_ID("image/warning!.png"), true);
+		//}
+	}
+	if (WarningDownFlag == true)
+	{
+		warningDown++;
+		if (warningDown > 35)
+		{
+			warningDown = 35;
+			lineFlag = true;
+		}
+		DrawBox(0, 0, SCREEN_SIZE_X, warningDown, 0xffff00, true);
+
+		if (lineFlag == true)
+		{
+			//削除
+			if (BlackLine.size() > 0)
+			{
+				if (BlackLine.begin()->x > (SCREEN_SIZE_X / 10))
+				{
+					BlackLine.erase(BlackLine.begin());
+					blSize--;
+				}
+			}
+			DrawFormatString(200, 400, 0xffffff, "Size:%d", blSize);
+
+			// 追加
+			if (blSize <= 45)
+			{
+				int Size = BlackLine.size();
+				BlackLine.push_back(VECTOR3((10 * -Size), 0));
+				blSize++;
+			}
+			lineCnt++;
+
+			if (lineCnt % 2 == 0 && blackLine >= -15)
+			{
+				blackLine--;
+			}
+			for (int j = 0; j < BlackLine.size(); j++)
+			{
+				for (int i = 0; i < 5; i++)
+				{
+					DrawLine((BlackLine[j].x + i) + (blSize * 10), warningDown - 2, (BlackLine[j].x + i + 5) + (blSize * 10), (warningDown + blackLine), 0x000000, true);
+				}
+				BlackLine[j].x++;
+				DrawFormatString(200, 450, 0xffffff, "frontX :%f", BlackLine.begin()->x);
+
+			}
+
+				
+		}
+		//DrawGraph(warningPosUp.x, warningPosUp.y, IMAGE_ID("image/warning!.png"), true);
+	}
+
 	lpGameTask.SetEnergy(energy);
 	distance = GameTask::GetInstance().distance;
 	EofG = GameTask::GetInstance().gravity;
 	gVec = GameTask::GetInstance().PandPvec;
 	//DrawFormatString(10, 400, GetColor(255, 255, 255), "Angle:%ff", Angle);
-	DrawFormatString(10, 550, GetColor(255, 255, 255), "EofG:%f", EofG);
 	//DrawFormatString(10, 380, GetColor(255, 255, 255), "gvecX:%f gvecY:%f", gVec.x, gVec.y);*/
 }
 
@@ -302,7 +361,8 @@ void Player::SetMove(void)
 		{
 			speed += 3.0f;
 		}
-		energy -= 100;
+		energy -= 10;
+		rolInc = 0;
 
 		particleFlag = true;
 		particleCheck = 5.0f;
@@ -330,7 +390,7 @@ void Player::SetMove(void)
 		vec.y = -(cos(Angle));
 		newPrePos = (radianPos - pos);
 		newPrecount = count;
-		energy -= 1;
+		energy -= 0.1f;
 		//newcount = count;
 		if (count != newcount)
 		{
