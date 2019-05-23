@@ -132,7 +132,7 @@ int GameTask::SystemInit(void)
 	//音楽ファイル読み込み
 	OP = LoadBGM("sound/uchuu-tanken .ogg");
 	Main = LoadBGM("sound/宇宙の佇み.ogg");
-	Result = LoadBGM("sound/世界が僕達に揺れるまで.mp3");
+	Result = LoadBGM("sound/世界が僕達に揺れるまで.ogg");
 	Over = LoadBGM("sound/宇宙空間.ogg");
 	SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMPRESS);	// 圧縮された全データはシステムメモリに格納され、再生する部分だけ逐次解凍しながらサウンドメモリに格納する(鳴らし終わると解凍したデータは破棄されるので何度も解凍処理が行われる)
 	Decision = LoadSoundMem("sound/選択音.ogg");
