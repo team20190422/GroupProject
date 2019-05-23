@@ -157,8 +157,8 @@ private:
 	bool landAnimFlag = false;
 
 	//‰¹ŠyŠÖŒW
-	int OP, Main, Result,Over;	//BGM
-	int Decision, Cancel, Rocket, Bom, Boost;
+	int OP, Main,ED1,ED2,LED,Over;	//BGM
+	int Decision, Cancel, Rocket, Bom, Boost,Emergency;
 	//‰B‚µƒRƒ}ƒ“ƒhŠÖŒW
 	int UFO,UFOBoost;
 	bool UFOFlag = false;
@@ -167,7 +167,6 @@ private:
 	float limitAnimSize = 2.0f;
 	int GameOverTime = 0;
 	int outScreenTime = 0;
-
 	int StageCnt = 0;
 	// ‚±‚±‚Ü‚Å
 

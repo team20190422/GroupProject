@@ -68,7 +68,6 @@ void Asteroid::Update(void)
 				VECTOR3 asteroidPosL((pos.x - imageSize) + (x * asteroidSize), (pos.y - imageSize) + (y * asteroidSize));
 				VECTOR3 asteroidPosR((pos.x - imageSize) + (x + 2) * asteroidSize, (pos.y - imageSize) + (y + 2) * asteroidSize);
 
-
 				DrawBox(asteroidPosL.x, asteroidPosL.y, asteroidPosR.x, asteroidPosR.y, GetColor(255, 0, 0), true);
 				if ((asteroidPosR.x > playerPosL.x && asteroidPosL.x < playerPosR.x))
 				{

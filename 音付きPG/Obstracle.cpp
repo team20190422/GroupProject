@@ -13,7 +13,6 @@ Obstracle::Obstracle()
 	o.right = (long)(pos.x + size.x / 2);
 	o.top = (long)(pos.y - size.y / 2);
 	o.bottom = (long)(pos.y + size.y / 2);
-
 }
 
 

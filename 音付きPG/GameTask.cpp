@@ -130,15 +130,18 @@ int GameTask::SystemInit(void)
 		//DieAnim[j] = LoadGraph("image/爆発_大.png");
 	}
 	//音楽ファイル読み込み
-	OP = LoadBGM("sound/uchuu-tanken .ogg");
+	OP = LoadBGM("sound/空の記憶.ogg");
 	Main = LoadBGM("sound/宇宙の佇み.ogg");
-	Result = LoadBGM("sound/世界が僕達に揺れるまで.ogg");
+	ED1 = LoadSoundMem("sound/遊星.ogg");
+	ED2 = LoadSoundMem("sound/farewell.ogg");
+	LED = LoadBGM("sound/世界が僕達に揺れるまで.ogg");
 	Over = LoadBGM("sound/宇宙空間.ogg");
 	SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMPRESS);	// 圧縮された全データはシステムメモリに格納され、再生する部分だけ逐次解凍しながらサウンドメモリに格納する(鳴らし終わると解凍したデータは破棄されるので何度も解凍処理が行われる)
 	Decision = LoadSoundMem("sound/選択音.ogg");
 	Rocket = LoadSoundMem("sound/ロケット噴射.ogg");
 	Boost = LoadSoundMem("sound/ガスバーナー.ogg");
 	Bom = LoadSoundMem("sound/explosion3.ogg");
+	Emergency = LoadSoundMem("sound/警報.ogg");
 	UFO = LoadSoundMem("sound/UFO01.ogg");
 	UFOBoost = LoadSoundMem("sound/UFOBoost.ogg");
 
@@ -165,15 +168,16 @@ int GameTask::GameInit(void)
 		subTitleFlag = false;
 	};
 	//
-
 	objList.clear();
 	bpList.clear();
+	backVec.clear();
 	//
 	riset();
 	//
 	DrawString(0, 0, "INIT", 0xffff00);
 
 	player = AddObjlist(std::make_shared<Player>(lpKeyMng.trgKey,lpKeyMng.oldKey));
+
 	obstracle = AddObjlist(std::make_shared<Obstracle>());
 
 	earth = AddBplist(std::make_shared<Earth>(VECTOR3(225, SCREEN_SIZE_Y * 2)));
@@ -220,6 +224,7 @@ int GameTask::GameTitle(void)
 	int title_x = 50, title_y = 50;
 	DrawGraph(title_x, title_y, IMAGE_ID("image/titleRogo.png"), true);
 	//サウンド関係
+	ChangeVolumeSoundMem(255 * 80 / 100,OP);//OPの音量の大きさをを80％に設定
 	if (CheckSoundMem(OP) == 0)PlaySoundMem(OP, DX_PLAYTYPE_LOOP);//OPが再生中でなければ音を鳴らす
 	
 	//隠しコマンド
@@ -410,7 +415,6 @@ int GameTask::GameMain(void)
 
 			}
 		}
-
 	}
 
 	for (auto itr : objList)
@@ -574,7 +578,8 @@ int GameTask::GameMain(void)
 	{
 		if (landingCnt[1] > 0 && !energyAnim)
 		{
-			landingCnt[1] -= 10;
+ 			landingCnt[1] -= 10;
+			PlaySoundMem(Emergency, DX_PLAYTYPE_BACK);
 		}
 		else
 		{
@@ -603,6 +608,7 @@ int GameTask::GameMain(void)
 			else if(landingCnt[1] <= 5)
 			{
 				ClsDrawScreen();
+				StopSoundMem(Emergency);
 				GtskPtr = &GameTask::GameOver;
 				GameOverTime = 0;
 			}
@@ -687,7 +693,7 @@ int GameTask::GameLandInit(void)
 
 	if (UFOFlag == true) {
 		
-		(*landPlayer)->init("image/ufo(side).png", VECTOR2(128 / 1, 128 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
+		(*landPlayer)->init("image/ufo(side).png", VECTOR2(32 / 1, 32 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
 	}
 	else {
 		//(*landPlayer)->init("image/playerBeforeLanding.png", VECTOR2(44 / 1, 22 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
@@ -702,7 +708,13 @@ int GameTask::GameLandInit(void)
 int GameTask::GameLanding(void)
 {
 	ClsDrawScreen();
-
+	//サウンド処理
+	StopSoundMem(UFO);		//UFO音を止める
+	StopSoundMem(UFOBoost);	//UFOBoost音を止める
+	StopSoundMem(Rocket);	//Rocket音を止める
+	StopSoundMem(Boost);	//Boost音を止める
+	StopSoundMem(Emergency);//Emergency音を止める
+	
 	if (landingCnt[0] < 255 && !landAnimFlag)
 	{
 		landingCnt[0] += 20;
@@ -752,23 +764,52 @@ int GameTask::GameLanding(void)
 
 int GameTask::GameResult(void)
 {
+
 	//リザルト背景画像描画
 	int Result_X = -100, Result_Y = 0;
 	DrawGraph(Result_X, Result_Y, IMAGE_ID("image/result.png"), true);
-	//タイトル文字画像描画
+	//リザルト文字画像描画
 	int result_x = 50;
 	int result_y = 50;
 	//DrawStringToHandle(result_x, result_y, "Result", 0xFFFFFF, Font);
 	DrawGraph(result_x, result_y, IMAGE_ID("image/ResultRogo.png"), true);
-	//サウンド処理
-	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);//Mainが再生中ならメモリに読み込んだMainの音データを止める
-	StopSoundMem(Rocket);// Rocketの音を止める
-	StopSoundMem(Boost);// Boostの音を止める
-	StopSoundMem(UFO);// UFOの音を止める
-	StopSoundMem(UFOBoost);//UFOBoostの音を止める
-	StopSoundMem(Bom);	// Bomの音を止める
-	ChangeVolumeSoundMem(200, Result);//Resultの音のボリュームをセット
-	if (CheckSoundMem(Result) == 0)PlaySoundMem(Result, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
+
+	int Clear_X = 0, Clear_Y = 250;
+	if (StageCnt == 0) {
+		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage1Clear.png"), true);
+	}
+	else if (StageCnt == 1) {
+		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage2Clear.png"), true);
+	}
+	else if (StageCnt == 2) {
+		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage3Clear.png"), true);
+	}
+
+	////文字描画関係とサウンド関係
+	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
+	if (CheckSoundMem(Boost) == 1)StopSoundMem(Boost);	//Boostが再生中ならBoostの音を止める
+	if (CheckSoundMem(UFO) == 1)StopSoundMem(UFO);		//UFOが再生中ならUFOの音を止める
+	if (CheckSoundMem(UFOBoost) == 1)StopSoundMem(UFOBoost);	//UFOBoostが再生中ならUFOBoostの音を止める
+	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
+	if (CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//Emergency音が再生中ならEmergency音を止める
+	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// Mainが再生中ならMainの音を止める
+	ChangeVolumeSoundMem(255 * 80 / 100, LED);//Resultの音量の大きさをを80％に設定
+	SetFontSize(50);		// ﾌｫﾝﾄのｻｲｽﾞ
+	SetFontThickness(8);	// ﾌｫﾝﾄの太さ
+	ChangeFont("Ailerons");
+	if (StageCnt == 0) {
+		if (CheckSoundMem(ED1) == 0)PlaySoundMem(ED1, DX_PLAYTYPE_LOOP);//ED1が再生中でなければ音を鳴らす
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 3, SCREEN_SIZE_Y / 2, "Stage1 CLEAR", 0xffffff);
+	}
+	else if (StageCnt == 1) {
+		if (CheckSoundMem(ED2) == 0)PlaySoundMem(ED2, DX_PLAYTYPE_LOOP);//ED2が再生中でなければ音を鳴らす
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 3, SCREEN_SIZE_Y / 2, "Stage2 CLEAR", 0xffffff);
+	}
+	else if (StageCnt == 2) {
+		if (CheckSoundMem(LED) == 0)PlaySoundMem(LED, DX_PLAYTYPE_LOOP);//LEDが再生中でなければ音を鳴らす
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 3, SCREEN_SIZE_Y / 2, "Stage3 CLEAR", 0xffffff);
+	}
+	//
 
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
@@ -782,7 +823,11 @@ int GameTask::GameResult(void)
 		getSample = false;*/
 		StageCnt++;
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(Result) == 1)StopSoundMem(Result);	// Resultが再生中ならResultの音を止める
+		//GtskPtr = &GameTask::GameInit;
+
+		if (CheckSoundMem(ED1) == 1)StopSoundMem(ED1);
+		if(CheckSoundMem(ED2) == 1)StopSoundMem(ED2);
+		if (CheckSoundMem(LED) == 1) StopSoundMem(LED);	// LEDが再生中ならLEDの音を止める
 		GtskPtr = &GameTask::GameInit;
 		if (StageCnt == StageMax)
 		{
@@ -797,13 +842,8 @@ int GameTask::GameResult(void)
 
 	SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 
-	DrawString(0, 0, "GameResult", 0xffffff);
-
-
-	SetFontSize(50);		// ﾌｫﾝﾄのｻｲｽﾞ
-	SetFontThickness(8);	// ﾌｫﾝﾄの太さ
-	ChangeFont("Ailerons");
-	DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "GAME CLEAR", 0xffffff);
+	//DrawString(0, 0, "GameResult", 0xffffff);
+	
 	SetFontSize(20);		// ﾌｫﾝﾄのｻｲｽﾞ
 	SetFontThickness(8);	// ﾌｫﾝﾄの太さ
 	ChangeFont("MSゴシック");
@@ -823,6 +863,7 @@ int GameTask::GameOver(void)
 	if (CheckSoundMem(UFO) == 1)StopSoundMem(UFO);		//UFOが再生中ならUFOの音を止める
 	if (CheckSoundMem(UFOBoost) == 1)StopSoundMem(UFOBoost);	//UFOBoostが再生中ならUFOBoostの音を止める
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
+	if(CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//Emergency音が再生中ならEmergency音を止める
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// Mainが再生中ならMainの音を止める
 	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over,DX_PLAYTYPE_LOOP);//Overが再生中でなければ音を鳴らす
 	
