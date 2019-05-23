@@ -141,13 +141,13 @@ int GameTask::SystemInit(void)
 	Bom = LoadSoundMem("sound/explosion3.ogg");
 	UFO = LoadSoundMem("sound/UFO01.ogg");
 	UFOBoost = LoadSoundMem("sound/UFOBoost.ogg");
+
 	GtskPtr = &GameTask::GameTitle;
 	return 0;
 }
 
 int GameTask::GameInit(void)
 {
-
 	auto riset = [&] {
 		time = 0;
 		AnimCnt = 0;
@@ -193,8 +193,8 @@ int GameTask::GameInit(void)
 		}
 	}
 
-	if (UFOFlag == true) {
-		(*player)->init("image/UFO.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
+	if (UFOFlag == true){
+		(*player)->init("image/UFO.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);//UFO•`‰æ
 	}
 	else{
 		(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
@@ -230,6 +230,7 @@ int GameTask::GameTitle(void)
 		int ufo_x = 25, ufo_y = 150;
 		DrawGraph(ufo_x, ufo_y,IMAGE_ID("image/UFOŒ°Œ».png"), true);
 	}
+
 	//ƒQ[ƒ€ƒ‚[ƒhˆÚs
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
@@ -237,7 +238,8 @@ int GameTask::GameTitle(void)
 		if (CheckSoundMem(OP) == 1) StopSoundMem(OP);//Title‚ªÄ¶’†‚È‚çTitle‚ðŽ~‚ß‚é
 		GtskPtr = &GameTask::GameInit;
 	}
-	DrawString(0, 0, "GAME_TITLE", 0xffffff);
+
+	//DrawString(0, 0, "GAME_TITLE", 0xffffff);
 	SetFontSize(40);
 	ChangeFont("Ailerons");
 	DrawString(80,300, "START EnterKey", 0xffff00);
@@ -472,7 +474,7 @@ int GameTask::GameMain(void)
 	//‹éŒ`‚Ì“–‚½‚è”»’è(ƒƒeƒI)
 	if (HitCheck((*player)->GetRect(), (*obstracle)->GetRect()) == true) {
 		hitCheck = true;
-		if (GetLandCheck() == true) {
+		if (GetLandCheck()) {
 			hitCheck = false;
 		}
 	}
@@ -497,7 +499,6 @@ int GameTask::GameMain(void)
 		StopSoundMem(Bom);	//Bom‰¹‚ðŽ~‚ß‚é
 	}
 
-
 	// ’…—¤¬Œ÷Žž
 	if (landingCheck && landingFlag)
 	{
@@ -518,7 +519,6 @@ int GameTask::GameMain(void)
 				// ’…—¤‚ÉˆÚs
 				GtskPtr = &GameTask::GameLandInit;
 			}
-			
 		}
 		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 	}
@@ -549,7 +549,6 @@ int GameTask::GameMain(void)
 			}
 		}
 
-		
 			if (landingCnt[1] > 0 && (outScreenTime++ % 60) == 0)
 			{
 				landingCnt[1] -= 20;
@@ -608,8 +607,6 @@ int GameTask::GameMain(void)
 				GameOverTime = 0;
 			}
 			SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
-
-
 		}
 	}
 	// ‚±‚±‚Ü‚Å
@@ -639,7 +636,6 @@ int GameTask::GameMain(void)
 	// ‚±‚±‚©‚ç
 	if (OutOfScreen)
 	{
-
 		//SetFontSize(limitAnimSize--);
 		limitAnimSize -= 0.033f;
 		if(limitTime > 10)
@@ -648,7 +644,6 @@ int GameTask::GameMain(void)
 		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, limitAnimSize, 0, OutScrAnim[limitTime], true);
 		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 		SetFontSize(20);		// Ì«ÝÄ‚Ì»²½Þ
-
 	}
 
 	if (limitAnimSize <= 0)
@@ -664,7 +659,6 @@ int GameTask::GameMain(void)
 		}
 		else
 		{
-
 			if (GameOverTime++ > 60)
 			{
 				ClsDrawScreen();
@@ -672,7 +666,6 @@ int GameTask::GameMain(void)
 				GameOverTime = 0;
 			}
 		}
-
 		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 	}
 
@@ -685,7 +678,6 @@ int GameTask::GameMain(void)
 	DrawFormatStringF(10, 600, GetColor(255, 255, 255), "GameOverTime %d", GameOverTime);
 	DrawFormatStringF(10, 650, GetColor(255, 255, 255), "landingCnt1 %d", landingCnt[1]);
 	ScreenFlip();
-
 	return 0;
 }
 
@@ -701,8 +693,6 @@ int GameTask::GameLandInit(void)
 		//(*landPlayer)->init("image/playerBeforeLanding.png", VECTOR2(44 / 1, 22 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
 		(*landPlayer)->init("image/player.png", VECTOR2(32 / 1, 32 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
 	}
-	
-
 
 	GtskPtr = &GameTask::GameLanding;
 
@@ -711,9 +701,7 @@ int GameTask::GameLandInit(void)
 
 int GameTask::GameLanding(void)
 {
-
 	ClsDrawScreen();
-
 
 	if (landingCnt[0] < 255 && !landAnimFlag)
 	{
@@ -773,7 +761,12 @@ int GameTask::GameResult(void)
 	//DrawStringToHandle(result_x, result_y, "Result", 0xFFFFFF, Font);
 	DrawGraph(result_x, result_y, IMAGE_ID("image/ResultRogo.png"), true);
 	//ƒTƒEƒ“ƒhˆ—
-	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bom‚ªÄ¶’†‚È‚çBom‚Ì‰¹‚ðŽ~‚ß‚é
+	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);//Main‚ªÄ¶’†‚È‚çƒƒ‚ƒŠ‚É“Ç‚Ýž‚ñ‚¾Main‚Ì‰¹ƒf[ƒ^‚ðŽ~‚ß‚é
+	StopSoundMem(Rocket);// Rocket‚Ì‰¹‚ðŽ~‚ß‚é
+	StopSoundMem(Boost);// Boost‚Ì‰¹‚ðŽ~‚ß‚é
+	StopSoundMem(UFO);// UFO‚Ì‰¹‚ðŽ~‚ß‚é
+	StopSoundMem(UFOBoost);//UFOBoost‚Ì‰¹‚ðŽ~‚ß‚é
+	StopSoundMem(Bom);	// Bom‚Ì‰¹‚ðŽ~‚ß‚é
 	ChangeVolumeSoundMem(200, Result);//Result‚Ì‰¹‚Ìƒ{ƒŠƒ…[ƒ€‚ðƒZƒbƒg
 	if (CheckSoundMem(Result) == 0)PlaySoundMem(Result, DX_PLAYTYPE_LOOP);//Result‚ªÄ¶’†‚Å‚È‚¯‚ê‚Î‰¹‚ð–Â‚ç‚·
 
@@ -804,7 +797,6 @@ int GameTask::GameResult(void)
 
 	SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 
-
 	DrawString(0, 0, "GameResult", 0xffffff);
 
 
@@ -825,7 +817,6 @@ int GameTask::GameResult(void)
 
 int GameTask::GameOver(void)
 {
-
 	//ƒTƒEƒ“ƒh
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocket‚ªÄ¶’†‚È‚çRocket‚Ì‰¹‚ðŽ~‚ß‚é
 	if (CheckSoundMem(Boost) == 1)StopSoundMem(Boost);	//Boost‚ªÄ¶’†‚È‚çBoost‚Ì‰¹‚ðŽ~‚ß‚é
@@ -834,7 +825,6 @@ int GameTask::GameOver(void)
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bom‚ªÄ¶’†‚È‚çBom‚Ì‰¹‚ðŽ~‚ß‚é
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// Main‚ªÄ¶’†‚È‚çMain‚Ì‰¹‚ðŽ~‚ß‚é
 	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over,DX_PLAYTYPE_LOOP);//Over‚ªÄ¶’†‚Å‚È‚¯‚ê‚Î‰¹‚ð–Â‚ç‚·
-	
 	
 	//PlaySoundMem(Over, DX_PLAYTYPE_LOOP);
 	
@@ -853,6 +843,7 @@ int GameTask::GameOver(void)
 		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// Over‚ªÄ¶’†‚È‚çOver‚Ì‰¹‚ðŽ~‚ß‚é
 		GtskPtr = &GameTask::GameTitle;
 	}
+
 	if (KeyMng::GetInstance().trgKey[P1_SPACE])
 	{
 		time = 0;
@@ -886,9 +877,7 @@ int GameTask::GameOver(void)
 		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 	}
 
-
 	DrawString(0, 0, "GameResult", 0xffffff);
-
 
 	SetFontSize(50);		// Ì«ÝÄ‚Ì»²½Þ
 	SetFontThickness(8);	// Ì«ÝÄ‚Ì‘¾‚³
