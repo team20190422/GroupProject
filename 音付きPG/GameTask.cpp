@@ -140,6 +140,7 @@ int GameTask::SystemInit(void)
 	Boost = LoadSoundMem("sound/ガスバーナー.ogg");
 	Bom = LoadSoundMem("sound/explosion3.ogg");
 	UFO = LoadSoundMem("sound/UFO01.ogg");
+	UFOBoost = LoadSoundMem("sound/UFOBoost.ogg");
 	GtskPtr = &GameTask::GameTitle;
 	return 0;
 }
@@ -194,8 +195,9 @@ int GameTask::GameInit(void)
 	}
 
 	if (UFOFlag == true) {
-		(*player)->init("image/Player2.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
-	}else{
+		(*player)->init("image/UFO.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
+	}
+	else{
 		(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
 	}
 	(*obstracle)->init("image/meteo.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 0.5f);
@@ -246,7 +248,6 @@ int GameTask::GameMain(void)
 {
 	ClsDrawScreen();
 	if (CheckSoundMem(Main) == 0)PlaySoundMem(Main, DX_PLAYTYPE_LOOP);//Mainが再生中でなければ音を鳴らす
-	
 	//サウンド関係
 	if (KeyMng::GetInstance().newKey[P1_UP]) {//↑キーが押されたとき
 		if (UFOFlag == true) {
@@ -263,12 +264,17 @@ int GameTask::GameMain(void)
 	}
 
 	if (KeyMng::GetInstance().newKey[P1_SPACE]) {
-		if (CheckSoundMem(Boost) == 0)PlaySoundMem(Boost, DX_PLAYTYPE_BACK);//Boostが再生中でなければ音を鳴らす
+		if (UFOFlag == true) {
+			if (CheckSoundMem(UFOBoost) == 0)PlaySoundMem(UFOBoost, DX_PLAYTYPE_BACK);//UFOBoostが再生中でなければ音を鳴らす
+		}
+		else {
+			if (CheckSoundMem(Boost) == 0)PlaySoundMem(Boost, DX_PLAYTYPE_BACK);//Boostが再生中でなければ音を鳴らす
+		}
 	}
 	else {
+		StopSoundMem(UFOBoost);//UFOBoost音を止める
 		StopSoundMem(Boost);//Boost音を止める
 	}
-
 
 	// ここから
 	auto StageDraw = [&] {
@@ -336,12 +342,12 @@ int GameTask::GameMain(void)
 	{
 		landingCheck = false;
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(Main) == 1) {	//Mainが再生中なら
-			StopSoundMem(Main);	////メモリに読み込んだMainの音データを削除
-			StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
-			StopSoundMem(Boost);// Boostが再生中ならBoostの音を止める
-			StopSoundMem(Bom);	// Bomが再生中ならBomの音を止める
-		}
+		if (CheckSoundMem(Main) == 1)StopSoundMem(Main);//Mainが再生中ならメモリに読み込んだMainの音データを止める
+		StopSoundMem(Rocket);// Rocketの音を止める
+		StopSoundMem(Boost);// Boostの音を止める
+		StopSoundMem(UFO);// UFOの音を止める
+		StopSoundMem(UFOBoost);//UFOBoostの音を止める
+		StopSoundMem(Bom);	// Bomの音を止める
 		GtskPtr = &GameTask::GameResult;
 	}
 
@@ -426,7 +432,9 @@ int GameTask::GameMain(void)
 			//DrawBox(playerPos.x, playerPos.y, playerPos.x + 200, playerPos.y + 200, 0xffffff, true);
 			DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
 			DrawString((int)playerPos.x, (int)playerPos.y, "やられた", 0xffffff);
+			//プレイヤーがやられた時（小惑星）のサウンド処理
 			StopSoundMem(UFO);		//UFO音を止める
+			StopSoundMem(UFOBoost);	//UFOBoost音を止める
 			StopSoundMem(Rocket);	//Rocket音を止める
 			StopSoundMem(Boost);	//Boost音を止める
 			if(CheckSoundMem(Bom) == 0)PlaySoundMem(Bom, DX_PLAYTYPE_BACK);//爆発音が鳴っているか調べてなっていなかったら鳴らす
@@ -459,21 +467,21 @@ int GameTask::GameMain(void)
 		}
 	}
 
-	//矩形の当たり判定
+	//矩形の当たり判定(メテオ)
 	if (HitCheck((*player)->GetRect(), (*obstracle)->GetRect()) == true) {
 		hitCheck = true;
 	}
-
-	if (hitCheck == true) {	//プレイヤーが死んだとき
+	//プレイヤーがメテオと当たった時の処理
+	if (hitCheck == true) {	
 		StopSoundMem(UFO);		//UFO音を止める
+		StopSoundMem(UFOBoost);	//UFOBoost音を止める
 		StopSoundMem(Rocket);	//Rocket音を止める
 		StopSoundMem(Boost);	//Boost音を止める
-		//爆発音が再生中でなければ爆発音を再生する
 		if (AnimTime++ % 10 == 0)
 		{
 			AnimCnt++;
 		}
-		DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
+		DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);//爆発アニメーションの描画
 		if (CheckSoundMem(Bom) == 0)PlaySoundMem(Bom, DX_PLAYTYPE_BACK);//Bomが再生中でなければ音を鳴らす
 		if (AnimCnt >= 11)
 		{
@@ -743,16 +751,15 @@ int GameTask::GameLanding(void)
 
 int GameTask::GameResult(void)
 {
-	//画像描画
+	//リザルト背景画像描画
 	int Result_X = -100, Result_Y = 0;
 	DrawGraph(Result_X, Result_Y, IMAGE_ID("image/result.png"), true);
-	//タイトル文字描画
+	//タイトル文字画像描画
 	int result_x = 50;
 	int result_y = 50;
 	//DrawStringToHandle(result_x, result_y, "Result", 0xFFFFFF, Font);
 	DrawGraph(result_x, result_y, IMAGE_ID("image/ResultRogo.png"), true);
-	//サウンド
-	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
+	//サウンド処理
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
 	if (CheckSoundMem(Result) == 0)PlaySoundMem(Result, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
 
@@ -807,6 +814,9 @@ int GameTask::GameOver(void)
 
 	//サウンド
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
+	if (CheckSoundMem(Boost) == 1)StopSoundMem(Boost);	//Boostが再生中ならBoostの音を止める
+	if (CheckSoundMem(UFO) == 1)StopSoundMem(UFO);		//UFOが再生中ならUFOの音を止める
+	if (CheckSoundMem(UFOBoost) == 1)StopSoundMem(UFOBoost);	//UFOBoostが再生中ならUFOBoostの音を止める
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// Mainが再生中ならMainの音を止める
 	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over,DX_PLAYTYPE_LOOP);//Overが再生中でなければ音を鳴らす
@@ -839,6 +849,7 @@ int GameTask::GameOver(void)
 		landingFlag = false;
 		returnFlag = false;
 		getSample = false;
+		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
 		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// Overが再生中ならOverの音を止める
 		GtskPtr = &GameTask::GameInit;
 	}

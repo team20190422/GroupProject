@@ -160,7 +160,7 @@ private:
 	int OP, Main, Result,Over;	//BGM
 	int Decision, Cancel, Rocket, Bom, Boost;
 	//‰B‚µƒRƒ}ƒ“ƒhŠÖŒW
-	int UFO;
+	int UFO,UFOBoost;
 	bool UFOFlag = false;
 	// ‚±‚±‚©‚ç
 	int limitTime = 4;
