@@ -17,9 +17,10 @@ public:
 
 
 private:
-	float vy = 0;
+	float vyS = 0;
+	float vyM = 0;
 	int randomX;
 	int randomY;
 	int count;
-	const int(&j)[6] = { 0 };
+	const int(&j)[7] = { 0 };
 };

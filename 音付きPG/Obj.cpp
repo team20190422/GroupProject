@@ -7,7 +7,7 @@ Obj::Obj()
 {
 }
 
-Obj::Obj(const int(&trgKey)[6], const int(&oldKey)[6])
+Obj::Obj(const int(&trgKey)[7], const int(&oldKey)[7])
 {
 }
 
@@ -99,23 +99,6 @@ bool Obj::SetVec(VECTOR3 vec)
 	return false;
 }
 
-bool & Obj::GetDeathFlag()
-{
-	return this->DeathFlag;
-}
-
-void Obj::SetDeathFlag(bool flag)
-{
-	if (flag == true) {
-		DeathFlag = true;
-	}
-	else {
-		DeathFlag = false;
-	}
-}
-
-
-
 const VECTOR3 & Obj::Normalize(VECTOR3 i,float mgn)
 {
 	i.x /= mgn;
@@ -125,7 +108,6 @@ const VECTOR3 & Obj::Normalize(VECTOR3 i,float mgn)
 
 void Obj::SetMove(void)
 {
-
 }
 
 

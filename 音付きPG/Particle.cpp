@@ -17,8 +17,8 @@ void Particle::Draw(void)
 {
     time++;
 
-	auto Color = GetColor(255, (time * time >= 255 ? 0 : 255 - (time * time)), (time * time >= 255 ? 0 : 255 - (time * time)));
-	DrawCircle((int)pos.x, (int)pos.y, (!sideFlag ? 1 : 3), Color/*GetColor(150, 40, 40)*/, true);
+	auto Color = GetColor((!sideFlag ? 100 : 255), (time * time >= 255 ? 0 : 255 - (time * time)), (time * time >= 255 ? 0 : 255 - (time * time)));
+	DrawCircle((int)pos.x, (int)pos.y, (!sideFlag ? 1 : 1), Color/*GetColor(150, 40, 40)*/, true);
 	
 	//DrawPixel((int)pos.x, (int)pos.y, GetColor(255, 255, 255));
 }
@@ -26,7 +26,8 @@ void Particle::Draw(void)
 void Particle::Update(void)
 {
 	SetMove();
-
+	//if(sideFlag)
+	//DrawFormatStringF(10, 400, GetColor(255, 255, 255), "vecXÅ@%f  vecY %f", vec.x, vec.y);
 }
 
 void Particle::SetMove(void)
@@ -39,8 +40,8 @@ void Particle::SetMove(void)
 	}
 	else
 	{
+		pos -= vec;
 		
-		//DrawFormatStringF(150, 10, GetColor(255, 255, 255), "posXÅ@%f  posY %f", pos.x, pos.y);
 	}
 }
 

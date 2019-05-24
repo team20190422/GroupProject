@@ -134,6 +134,11 @@ VECTOR3 operator*(float j, const VECTOR3 & i)
 	//return VECTOR3(j * i.x,j * i.y);
 }
 
+VECTOR3 operator*(const VECTOR3 & i, const VECTOR3 & j)
+{
+	return VECTOR3(i.x * j.x, i.y * j.y);
+}
+
 VECTOR3 operator*(const VECTOR3 & i, float j)
 {
 	VECTOR3 vec;

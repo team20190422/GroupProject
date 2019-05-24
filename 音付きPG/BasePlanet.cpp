@@ -18,6 +18,7 @@ BasePlanet::~BasePlanet()
 //BasePlanet::PlanetFactry(惑星の重力, 惑星の半径, 惑星のpos)
 bool BasePlanet::PlanetFactry(float g, float r, VECTOR3 planetPos)
 {
+	gravity = g;
 	// playerPosCをﾌﾟﾚｲﾔｰの中心座標に設定
 	playerPosC = GameTask::GetInstance().playerPos;
 	// playerPosをﾌﾟﾚｲﾔｰの左上座標に設定
@@ -26,20 +27,22 @@ bool BasePlanet::PlanetFactry(float g, float r, VECTOR3 planetPos)
 	// planetPosCを惑星の中心座標に設定
 	planetPosC.x = planetPos.x;
 	planetPosC.y = planetPos.y;
+
 	planetPos.x = planetPosC.x - r;
 	planetPos.y = planetPosC.y - r;
 	// playerPosとplanetPosを結ぶ
 
-	DrawCircle((int)planetPosC.x, (int)planetPosC.y, 2, 0x0000ff, true);
-	//DrawCircle(planetPosC.x, planetPosC.y, 100, 0xff0000, true);
-	DrawCircle((int)playerPosC.x, (int)playerPosC.y, 2, 0x0000ff, true);
+	//DrawCircle((int)planetPosC.x, (int)planetPosC.y, 2, 0x0000ff, true);
+	////DrawCircle(planetPosC.x, planetPosC.y, 100, 0xff0000, true);
+	//DrawCircle((int)playerPosC.x, (int)playerPosC.y, 2, 0x0000ff, true);
 	//DrawCircle(playerPosC.x, playerPosC.y, 20, 0xff0000, true);
+
 	//DrawBox((int)playerPos.x, (int)playerPos.y, (int)playerPos.x + 32, (int)playerPos.y + 32, GetColor(255, 255, 255), true);
 	/*DrawFormatString(10, 70, GetColor(255, 255, 255), "PposX　%f  PposY %f", playerPos.x, playerPos.y);
 	DrawFormatString(10, 130, GetColor(255, 255, 255), "PLposX　%f  PLposY %f", planetPos.x, planetPos.y);*/
 	//DrawFormatString(10, 160, GetColor(255, 255, 255), "hitX　%f  hitY %f", hit.x, hit.y);
 
-	DrawLine(playerPosC.x, playerPosC.y, planetPosC.x, planetPosC.y, 0x0000ff);
+	//DrawLine(playerPosC.x, playerPosC.y, planetPosC.x, planetPosC.y, 0x0000ff);
 
 	if (HitCheck(playerPos, planetPosC, playerPosC, planetPosC, r))
 	{
@@ -71,6 +74,7 @@ int BasePlanet::HitCheck(VECTOR3 playerPos,VECTOR3 planetPos, VECTOR3 playerPosC
 
 	hit.x = cos(playerAngle) * (playerPos.x - planetPosC.x) - sin(playerAngle) * (playerPos.y - planetPosC.y) + planetPosC.x;
 	hit.y = sin(playerAngle) * (planetPos.x - playerPosC.x) - cos(playerAngle) * (planetPos.y - playerPosC.y) + planetPosC.y;
+
 
 	// 角度を戻した円の中心点から矩形へ一番近い点を求める。
 	// X座標
@@ -109,6 +113,7 @@ int BasePlanet::HitCheck(VECTOR3 playerPos,VECTOR3 planetPos, VECTOR3 playerPosC
 	/*DrawFormatString(0, 300, 0xffffff, "%f", GetDistance());
 	DrawFormatString(0, 330, 0xffffff, "半径　%f", r);*/
 
+
 	if (distance < r)
 	{
 		return true;
@@ -124,11 +129,16 @@ const float & BasePlanet::GetDistance()
 	return this->distance;
 }
 
+const float & BasePlanet::GetGravity()
+{
+	return this->gravity;
+}
+
 const VECTOR3 & BasePlanet::GetVec()
 {
 	auto planetAngle = atan2(planetPosC.y - playerPosC.y, planetPosC.x - playerPosC.x) + 1.5f;
 	VECTOR3 planetVec = { 0,0 };
-	
+
 	planetVec.x = sin(planetAngle);
 	planetVec.y = -cos(planetAngle);
 	return planetVec;
