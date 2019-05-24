@@ -132,7 +132,9 @@ int GameTask::SystemInit(void)
 	//音楽ファイル読み込み
 	OP = LoadBGM("sound/空の記憶.ogg");
 	Main = LoadBGM("sound/宇宙の佇み.ogg");
-	Result = LoadBGM("sound/世界が僕達に揺れるまで.ogg");
+	ED1 = LoadBGM("sound/遊星.ogg");
+	ED2 = LoadBGM("sound/farewell.ogg");
+	LED = LoadBGM("sound/世界が僕達に揺れるまで.ogg");
 	Over = LoadBGM("sound/宇宙空間.ogg");
 	SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMPRESS);	// 圧縮された全データはシステムメモリに格納され、再生する部分だけ逐次解凍しながらサウンドメモリに格納する(鳴らし終わると解凍したデータは破棄されるので何度も解凍処理が行われる)
 	Decision = LoadSoundMem("sound/選択音.ogg");
@@ -757,16 +759,25 @@ int GameTask::GameResult(void)
 	//サウンド
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
-	if (CheckSoundMem(Result) == 0)PlaySoundMem(Result, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
+	
+	SetFontSize(50);		// ﾌｫﾝﾄのｻｲｽﾞ
+	SetFontThickness(8);	// ﾌｫﾝﾄの太さ
+	ChangeFont("Ailerons");
 
 	if (StageCnt == 0) {
+		if (CheckSoundMem(ED1) == 0)PlaySoundMem(ED1, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
 		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage1Clear.png"), true);
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "STAGE1 CLEAR", 0xffffff);
 	}
 	else if (StageCnt == 1) {
+		if (CheckSoundMem(ED2) == 0)PlaySoundMem(ED2, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
 		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage2Clear.png"), true);
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "STAGE2 CLEAR", 0xffffff);
 	}
 	else if (StageCnt == 2) {
+		if (CheckSoundMem(LED) == 0)PlaySoundMem(LED, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
 		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage3Clear.png"), true);
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "GAME CLEAR", 0xffffff);
 	}
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
@@ -780,8 +791,13 @@ int GameTask::GameResult(void)
 		getSample = false;*/
 		StageCnt++;
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(Result) == 1)StopSoundMem(Result);	// Resultが再生中ならResultの音を止める
+
+		if (CheckSoundMem(ED1) == 1)StopSoundMem(ED1);	// ED1が再生中ならEd1の音を止める
+		if (CheckSoundMem(ED2) == 1)StopSoundMem(ED2);	// ED1が再生中ならEd1の音を止める
+
+		if (CheckSoundMem(LED) == 1)StopSoundMem(LED);	// LEDが再生中ならLEDの音を止める
 		GtskPtr = &GameTask::GameInit;
+		
 		if (StageCnt == StageMax)
 		{
 			UFOFlag = false;
@@ -796,13 +812,8 @@ int GameTask::GameResult(void)
 	SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 
 
-	DrawString(0, 0, "GameResult", 0xffffff);
+//	DrawString(0, 0, "GameResult", 0xffffff);
 
-
-	SetFontSize(50);		// ﾌｫﾝﾄのｻｲｽﾞ
-	SetFontThickness(8);	// ﾌｫﾝﾄの太さ
-	ChangeFont("Ailerons");
-	DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "GAME CLEAR", 0xffffff);
 	SetFontSize(20);		// ﾌｫﾝﾄのｻｲｽﾞ
 	SetFontThickness(8);	// ﾌｫﾝﾄの太さ
 	ChangeFont("MSゴシック");

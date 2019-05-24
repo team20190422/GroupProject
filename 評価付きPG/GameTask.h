@@ -157,7 +157,7 @@ private:
 	bool landAnimFlag = false;
 
 	//‰¹ŠyŠÖŒW
-	int OP, Main, Result,Over;	//BGM
+	int OP, Main, ED1,ED2,LED,Over;	//BGM
 	int Decision, Cancel, Rocket, Bom, Boost;
 	//‰B‚µƒRƒ}ƒ“ƒhŠÖŒW
 	int UFO;
