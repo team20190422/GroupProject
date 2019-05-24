@@ -124,7 +124,7 @@ int GameTask::SystemInit(void)
 
 	for (int j = 0; j < 11; j++)
 	{
-		DieAnim[j] = LoadDivGraph("image/îöî≠_ëÂ.png", 11, 11, 1, 115, 100, DieAnim,true);
+		DieAnim[j] = LoadDivGraph("image/îöî≠_ëÂ.png", 11, 11, 1, 115, 100, DieAnim, true);
 		OutScrAnim[j] = LoadDivGraph("image/countdown.png", 11, 11, 1, 100, 100, OutScrAnim, true);
 
 		//DieAnim[j] = LoadGraph("image/îöî≠_ëÂ.png");
@@ -132,22 +132,21 @@ int GameTask::SystemInit(void)
 	//âπäyÉtÉ@ÉCÉãì«Ç›çûÇ›
 	OP = LoadBGM("sound/ãÛÇÃãLâØ.ogg");
 	Main = LoadBGM("sound/âFíàÇÃò»Ç›.ogg");
-	ED1 = LoadSoundMem("sound/óVêØ.ogg");
-	ED2 = LoadSoundMem("sound/farewell.ogg");
+	ED1 = LoadBGM("sound/óVêØ.ogg");
+	ED2 = LoadBGM("sound/farewell.ogg");
 	LED = LoadBGM("sound/ê¢äEÇ™ñlíBÇ…óhÇÍÇÈÇ‹Ç≈.ogg");
 	Over = LoadBGM("sound/âFíàãÛä‘.ogg");
 	SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMPRESS);	// à≥èkÇ≥ÇÍÇΩëSÉfÅ[É^ÇÕÉVÉXÉeÉÄÉÅÉÇÉäÇ…äiî[Ç≥ÇÍÅAçƒê∂Ç∑ÇÈïîï™ÇæÇØíÄéüâìÄÇµÇ»Ç™ÇÁÉTÉEÉìÉhÉÅÉÇÉäÇ…äiî[Ç∑ÇÈ(ñ¬ÇÁÇµèIÇÌÇÈÇ∆âìÄÇµÇΩÉfÅ[É^ÇÕîjä¸Ç≥ÇÍÇÈÇÃÇ≈âΩìxÇ‡âìÄèàóùÇ™çsÇÌÇÍÇÈ)
 	Decision = LoadSoundMem("sound/ëIëâπ.ogg");
 	Rocket = LoadSoundMem("sound/ÉçÉPÉbÉgï¨éÀ.ogg");
 	Boost = LoadSoundMem("sound/ÉKÉXÉoÅ[ÉiÅ[.ogg");
-	Bom = LoadSoundMem("sound/explosion3.ogg");
 	Emergency = LoadSoundMem("sound/åxïÒ.ogg");
+	Bom = LoadSoundMem("sound/explosion3.ogg");
 	UFO = LoadSoundMem("sound/UFO01.ogg");
-	UFOBoost = LoadSoundMem("sound/UFOBoost.ogg");
-
 	GtskPtr = &GameTask::GameTitle;
 	return 0;
 }
+
 
 int GameTask::GameInit(void)
 {
@@ -168,16 +167,15 @@ int GameTask::GameInit(void)
 		subTitleFlag = false;
 	};
 	//
+
 	objList.clear();
 	bpList.clear();
-	backVec.clear();
 	//
 	riset();
 	//
 	DrawString(0, 0, "INIT", 0xffff00);
 
-	player = AddObjlist(std::make_shared<Player>(lpKeyMng.trgKey,lpKeyMng.oldKey));
-
+	player = AddObjlist(std::make_shared<Player>(lpKeyMng.trgKey, lpKeyMng.oldKey));
 	obstracle = AddObjlist(std::make_shared<Obstracle>());
 
 	earth = AddBplist(std::make_shared<Earth>(VECTOR3(225, SCREEN_SIZE_Y * 2)));
@@ -197,10 +195,10 @@ int GameTask::GameInit(void)
 		}
 	}
 
-	if (UFOFlag == true){
-		(*player)->init("image/UFO.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);//UFOï`âÊ
+	if (UFOFlag == true) {
+		(*player)->init("image/UFO.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
 	}
-	else{
+	else {
 		(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
 	}
 	(*obstracle)->init("image/meteo.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 0.5f);
@@ -223,19 +221,24 @@ int GameTask::GameTitle(void)
 	//É^ÉCÉgÉãÉçÉSï`âÊ
 	int title_x = 50, title_y = 50;
 	DrawGraph(title_x, title_y, IMAGE_ID("image/titleRogo.png"), true);
+	//ÉXÉ^Å[Égï`âÊ
+	static int count = 0;
+	int Start_X = 35, Start_Y = 250;
+	count = (count + 1) % 100;
+	if (count < 50) {
+		DrawGraph(Start_X, Start_Y, IMAGE_ID("image/start.png"), true);
+	}
 	//ÉTÉEÉìÉhä÷åW
-	ChangeVolumeSoundMem(255 * 80 / 100,OP);//OPÇÃâπó ÇÃëÂÇ´Ç≥ÇÇ80ÅìÇ…ê›íË
 	if (CheckSoundMem(OP) == 0)PlaySoundMem(OP, DX_PLAYTYPE_LOOP);//OPÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
-	
-	//âBÇµÉRÉ}ÉìÉh
+
+																  //âBÇµÉRÉ}ÉìÉh
 	if (KeyMng::GetInstance().newKey[P1_LCtrl]) {
 		UFOFlag = true;
 	}
 	if (UFOFlag == true) {
 		int ufo_x = 25, ufo_y = 150;
-		DrawGraph(ufo_x, ufo_y,IMAGE_ID("image/UFOå∞åª.png"), true);
+		DrawGraph(ufo_x, ufo_y, IMAGE_ID("image/UFOå∞åª.png"), true);
 	}
-
 	//ÉQÅ[ÉÄÉÇÅ[Éhà⁄çs
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
@@ -243,12 +246,7 @@ int GameTask::GameTitle(void)
 		if (CheckSoundMem(OP) == 1) StopSoundMem(OP);//TitleÇ™çƒê∂íÜÇ»ÇÁTitleÇé~ÇﬂÇÈ
 		GtskPtr = &GameTask::GameInit;
 	}
-
-	//DrawString(0, 0, "GAME_TITLE", 0xffffff);
-	SetFontSize(40);
-	ChangeFont("Ailerons");
-	DrawString(80,300, "START EnterKey", 0xffff00);
-
+	DrawString(0, 0, "GAME_TITLE", 0xffffff);
 	ScreenFlip();
 	return 0;
 }
@@ -258,7 +256,8 @@ int GameTask::GameMain(void)
 {
 	ClsDrawScreen();
 	if (CheckSoundMem(Main) == 0)PlaySoundMem(Main, DX_PLAYTYPE_LOOP);//MainÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
-	//ÉTÉEÉìÉhä÷åW
+
+																	  //ÉTÉEÉìÉhä÷åW
 	if (KeyMng::GetInstance().newKey[P1_UP]) {//Å™ÉLÅ[Ç™âüÇ≥ÇÍÇΩÇ∆Ç´
 		if (UFOFlag == true) {
 			if (CheckSoundMem(UFO) == 0)PlaySoundMem(UFO, DX_PLAYTYPE_LOOP);//UFOÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
@@ -274,17 +273,12 @@ int GameTask::GameMain(void)
 	}
 
 	if (KeyMng::GetInstance().newKey[P1_SPACE]) {
-		if (UFOFlag == true) {
-			if (CheckSoundMem(UFOBoost) == 0)PlaySoundMem(UFOBoost, DX_PLAYTYPE_BACK);//UFOBoostÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
-		}
-		else {
-			if (CheckSoundMem(Boost) == 0)PlaySoundMem(Boost, DX_PLAYTYPE_BACK);//BoostÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
-		}
+		if (CheckSoundMem(Boost) == 0)PlaySoundMem(Boost, DX_PLAYTYPE_BACK);//BoostÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 	}
 	else {
-		StopSoundMem(UFOBoost);//UFOBoostâπÇé~ÇﬂÇÈ
 		StopSoundMem(Boost);//BoostâπÇé~ÇﬂÇÈ
 	}
+
 
 	// Ç±Ç±Ç©ÇÁ
 	auto StageDraw = [&] {
@@ -352,16 +346,17 @@ int GameTask::GameMain(void)
 	{
 		landingCheck = false;
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(Main) == 1)StopSoundMem(Main);//MainÇ™çƒê∂íÜÇ»ÇÁÉÅÉÇÉäÇ…ì«Ç›çûÇÒÇæMainÇÃâπÉfÅ[É^Çé~ÇﬂÇÈ
-		StopSoundMem(Rocket);// RocketÇÃâπÇé~ÇﬂÇÈ
-		StopSoundMem(Boost);// BoostÇÃâπÇé~ÇﬂÇÈ
-		StopSoundMem(UFO);// UFOÇÃâπÇé~ÇﬂÇÈ
-		StopSoundMem(UFOBoost);//UFOBoostÇÃâπÇé~ÇﬂÇÈ
-		StopSoundMem(Bom);	// BomÇÃâπÇé~ÇﬂÇÈ
+		if (CheckSoundMem(Main) == 1) {	//MainÇ™çƒê∂íÜÇ»ÇÁ
+			StopSoundMem(Main);	////ÉÅÉÇÉäÇ…ì«Ç›çûÇÒÇæMainÇÃâπÉfÅ[É^ÇçÌèú
+			StopSoundMem(Rocket);// RocketÇ™çƒê∂íÜÇ»ÇÁRocketÇÃâπÇé~ÇﬂÇÈ
+			StopSoundMem(Boost);// BoostÇ™çƒê∂íÜÇ»ÇÁBoostÇÃâπÇé~ÇﬂÇÈ
+			StopSoundMem(Bom);	// BomÇ™çƒê∂íÜÇ»ÇÁBomÇÃâπÇé~ÇﬂÇÈ
+		}
 		GtskPtr = &GameTask::GameResult;
 	}
 
 	std::vector<BackGround*>::iterator itrBG = backVec.begin();
+
 
 	if (count <= 300)
 	{
@@ -415,6 +410,7 @@ int GameTask::GameMain(void)
 
 			}
 		}
+
 	}
 
 	for (auto itr : objList)
@@ -440,19 +436,17 @@ int GameTask::GameMain(void)
 			//DrawBox(playerPos.x, playerPos.y, playerPos.x + 200, playerPos.y + 200, 0xffffff, true);
 			DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
 			DrawString((int)playerPos.x, (int)playerPos.y, "Ç‚ÇÁÇÍÇΩ", 0xffffff);
-			//ÉvÉåÉCÉÑÅ[Ç™Ç‚ÇÁÇÍÇΩéûÅiè¨òfêØÅjÇÃÉTÉEÉìÉhèàóù
 			StopSoundMem(UFO);		//UFOâπÇé~ÇﬂÇÈ
-			StopSoundMem(UFOBoost);	//UFOBoostâπÇé~ÇﬂÇÈ
 			StopSoundMem(Rocket);	//RocketâπÇé~ÇﬂÇÈ
 			StopSoundMem(Boost);	//BoostâπÇé~ÇﬂÇÈ
-			if(CheckSoundMem(Bom) == 0)PlaySoundMem(Bom, DX_PLAYTYPE_BACK);//îöî≠âπÇ™ñ¬Ç¡ÇƒÇ¢ÇÈÇ©í≤Ç◊ÇƒÇ»Ç¡ÇƒÇ¢Ç»Ç©Ç¡ÇΩÇÁñ¬ÇÁÇ∑
-			// Ç±Ç±ÇÃifï™
+			if (CheckSoundMem(Bom) == 0)PlaySoundMem(Bom, DX_PLAYTYPE_BACK);//îöî≠âπÇ™ñ¬Ç¡ÇƒÇ¢ÇÈÇ©í≤Ç◊ÇƒÇ»Ç¡ÇƒÇ¢Ç»Ç©Ç¡ÇΩÇÁñ¬ÇÁÇ∑
+																			// Ç±Ç±ÇÃifï™
 			if (AnimCnt >= 11)
 			{
 				GameOver();
 			}
 		}
-		
+
 		if (landingCheck && landingFlag)
 		{
 			SetHitCheck(false);
@@ -475,24 +469,24 @@ int GameTask::GameMain(void)
 		}
 	}
 
-	//ãÈå`ÇÃìñÇΩÇËîªíË(ÉÅÉeÉI)
+	//ãÈå`ÇÃìñÇΩÇËîªíË
 	if (HitCheck((*player)->GetRect(), (*obstracle)->GetRect()) == true) {
 		hitCheck = true;
 		if (GetLandCheck()) {
 			hitCheck = false;
 		}
 	}
-	//ÉvÉåÉCÉÑÅ[Ç™ÉÅÉeÉIÇ∆ìñÇΩÇ¡ÇΩéûÇÃèàóù
-	if (hitCheck == true) {	
+
+	if (hitCheck == true) {	//ÉvÉåÉCÉÑÅ[Ç™éÄÇÒÇæÇ∆Ç´
 		StopSoundMem(UFO);		//UFOâπÇé~ÇﬂÇÈ
-		StopSoundMem(UFOBoost);	//UFOBoostâπÇé~ÇﬂÇÈ
 		StopSoundMem(Rocket);	//RocketâπÇé~ÇﬂÇÈ
 		StopSoundMem(Boost);	//BoostâπÇé~ÇﬂÇÈ
+								//îöî≠âπÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒîöî≠âπÇçƒê∂Ç∑ÇÈ
 		if (AnimTime++ % 10 == 0)
 		{
 			AnimCnt++;
 		}
-		DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);//îöî≠ÉAÉjÉÅÅ[ÉVÉáÉìÇÃï`âÊ
+		DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
 		if (CheckSoundMem(Bom) == 0)PlaySoundMem(Bom, DX_PLAYTYPE_BACK);//BomÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 		if (AnimCnt >= 11)
 		{
@@ -502,6 +496,7 @@ int GameTask::GameMain(void)
 	else {
 		StopSoundMem(Bom);	//BomâπÇé~ÇﬂÇÈ
 	}
+
 
 	// íÖó§ê¨å˜éû
 	if (landingCheck && landingFlag)
@@ -523,6 +518,7 @@ int GameTask::GameMain(void)
 				// íÖó§Ç…à⁄çs
 				GtskPtr = &GameTask::GameLandInit;
 			}
+
 		}
 		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 	}
@@ -553,12 +549,13 @@ int GameTask::GameMain(void)
 			}
 		}
 
-			if (landingCnt[1] > 0 && (outScreenTime++ % 60) == 0)
-			{
-				landingCnt[1] -= 20;
-				limitTime++;
-			}
-			SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+
+		if (landingCnt[1] > 0 && (outScreenTime++ % 60) == 0)
+		{
+			landingCnt[1] -= 20;
+			limitTime++;
+		}
+		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 	}
 	else
 	{
@@ -578,7 +575,7 @@ int GameTask::GameMain(void)
 	{
 		if (landingCnt[1] > 0 && !energyAnim)
 		{
- 			landingCnt[1] -= 10;
+			landingCnt[1] -= 10;
 			PlaySoundMem(Emergency, DX_PLAYTYPE_BACK);
 		}
 		else
@@ -605,7 +602,7 @@ int GameTask::GameMain(void)
 			{
 				landingCnt[1] -= 15;
 			}
-			else if(landingCnt[1] <= 5)
+			else if (landingCnt[1] <= 5)
 			{
 				ClsDrawScreen();
 				StopSoundMem(Emergency);
@@ -613,6 +610,8 @@ int GameTask::GameMain(void)
 				GameOverTime = 0;
 			}
 			SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+
+
 		}
 	}
 	// Ç±Ç±Ç‹Ç≈
@@ -642,14 +641,16 @@ int GameTask::GameMain(void)
 	// Ç±Ç±Ç©ÇÁ
 	if (OutOfScreen)
 	{
+
 		//SetFontSize(limitAnimSize--);
 		limitAnimSize -= 0.033f;
-		if(limitTime > 10)
-		SetDrawBright(255, 255, 255);
+		if (limitTime > 10)
+			SetDrawBright(255, 255, 255);
 		//DrawFormatString(SCREEN_CENTER_X, SCREEN_CENTER_Y, GetColor(255, 255, 255), "%d", limitTime);
 		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, limitAnimSize, 0, OutScrAnim[limitTime], true);
 		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 		SetFontSize(20);		// Ã´›ƒÇÃª≤Ωﬁ
+
 	}
 
 	if (limitAnimSize <= 0)
@@ -665,6 +666,7 @@ int GameTask::GameMain(void)
 		}
 		else
 		{
+
 			if (GameOverTime++ > 60)
 			{
 				ClsDrawScreen();
@@ -672,6 +674,7 @@ int GameTask::GameMain(void)
 				GameOverTime = 0;
 			}
 		}
+
 		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 	}
 
@@ -684,6 +687,7 @@ int GameTask::GameMain(void)
 	DrawFormatStringF(10, 600, GetColor(255, 255, 255), "GameOverTime %d", GameOverTime);
 	DrawFormatStringF(10, 650, GetColor(255, 255, 255), "landingCnt1 %d", landingCnt[1]);
 	ScreenFlip();
+
 	return 0;
 }
 
@@ -692,13 +696,12 @@ int GameTask::GameLandInit(void)
 	landPlayer = AddObjlist(std::make_shared<LandPlayer>(lpKeyMng.trgKey, lpKeyMng.oldKey));
 
 	if (UFOFlag == true) {
-		
 		(*landPlayer)->init("image/ufo(side).png", VECTOR2(32 / 1, 32 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
 	}
 	else {
-		//(*landPlayer)->init("image/playerBeforeLanding.png", VECTOR2(44 / 1, 22 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
 		(*landPlayer)->init("image/player.png", VECTOR2(32 / 1, 32 / 1), VECTOR2(1, 1), VECTOR2(0, 0), 1.0f);
 	}
+
 
 	GtskPtr = &GameTask::GameLanding;
 
@@ -707,14 +710,11 @@ int GameTask::GameLandInit(void)
 
 int GameTask::GameLanding(void)
 {
+
 	ClsDrawScreen();
-	//ÉTÉEÉìÉhèàóù
-	StopSoundMem(UFO);		//UFOâπÇé~ÇﬂÇÈ
-	StopSoundMem(UFOBoost);	//UFOBoostâπÇé~ÇﬂÇÈ
-	StopSoundMem(Rocket);	//RocketâπÇé~ÇﬂÇÈ
-	StopSoundMem(Boost);	//BoostâπÇé~ÇﬂÇÈ
+
 	StopSoundMem(Emergency);//EmergencyâπÇé~ÇﬂÇÈ
-	
+
 	if (landingCnt[0] < 255 && !landAnimFlag)
 	{
 		landingCnt[0] += 20;
@@ -764,53 +764,55 @@ int GameTask::GameLanding(void)
 
 int GameTask::GameResult(void)
 {
-
-	//ÉäÉUÉãÉgîwåiâÊëúï`âÊ
+	//âÊëúï`âÊ
 	int Result_X = -100, Result_Y = 0;
 	DrawGraph(Result_X, Result_Y, IMAGE_ID("image/result.png"), true);
-	//ÉäÉUÉãÉgï∂éöâÊëúï`âÊ
+
+	int Clear_X = 0, Clear_Y = 250;
+
+	//É^ÉCÉgÉãï∂éöï`âÊ
 	int result_x = 50;
 	int result_y = 50;
 	//DrawStringToHandle(result_x, result_y, "Result", 0xFFFFFF, Font);
 	DrawGraph(result_x, result_y, IMAGE_ID("image/ResultRogo.png"), true);
-
-	int Clear_X = 0, Clear_Y = 250;
-	if (StageCnt == 0) {
-		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage1Clear.png"), true);
-	}
-	else if (StageCnt == 1) {
-		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage2Clear.png"), true);
-	}
-	else if (StageCnt == 2) {
-		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage3Clear.png"), true);
-	}
-
-	////ï∂éöï`âÊä÷åWÇ∆ÉTÉEÉìÉhä÷åW
+	//ÉTÉEÉìÉh
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// RocketÇ™çƒê∂íÜÇ»ÇÁRocketÇÃâπÇé~ÇﬂÇÈ
-	if (CheckSoundMem(Boost) == 1)StopSoundMem(Boost);	//BoostÇ™çƒê∂íÜÇ»ÇÁBoostÇÃâπÇé~ÇﬂÇÈ
-	if (CheckSoundMem(UFO) == 1)StopSoundMem(UFO);		//UFOÇ™çƒê∂íÜÇ»ÇÁUFOÇÃâπÇé~ÇﬂÇÈ
-	if (CheckSoundMem(UFOBoost) == 1)StopSoundMem(UFOBoost);	//UFOBoostÇ™çƒê∂íÜÇ»ÇÁUFOBoostÇÃâπÇé~ÇﬂÇÈ
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// BomÇ™çƒê∂íÜÇ»ÇÁBomÇÃâπÇé~ÇﬂÇÈ
-	if (CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//EmergencyâπÇ™çƒê∂íÜÇ»ÇÁEmergencyâπÇé~ÇﬂÇÈ
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// MainÇ™çƒê∂íÜÇ»ÇÁMainÇÃâπÇé~ÇﬂÇÈ
-	ChangeVolumeSoundMem(255 * 80 / 100, LED);//ResultÇÃâπó ÇÃëÂÇ´Ç≥ÇÇ80ÅìÇ…ê›íË
+	if (CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//EmergencyâπÇ™çƒê∂íÜÇ»ÇÁEmergencyâπÇé~ÇﬂÇÈ
 	SetFontSize(50);		// Ã´›ƒÇÃª≤Ωﬁ
 	SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
 	ChangeFont("Ailerons");
+
+	static int count = 0;
+
 	if (StageCnt == 0) {
-		if (CheckSoundMem(ED1) == 0)PlaySoundMem(ED1, DX_PLAYTYPE_LOOP);//ED1Ç™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
-		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 3, SCREEN_SIZE_Y / 2, "Stage1 CLEAR", 0xffffff);
+		if (CheckSoundMem(ED1) == 0)PlaySoundMem(ED1, DX_PLAYTYPE_LOOP);//ResultÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
+		count = (count + 1) % 100;
+		if (count < 50) {
+			DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage1Clear.png"), true);
+		}
+
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "STAGE1 CLEAR", 0xffffff);
 	}
 	else if (StageCnt == 1) {
-		if (CheckSoundMem(ED2) == 0)PlaySoundMem(ED2, DX_PLAYTYPE_LOOP);//ED2Ç™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
-		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 3, SCREEN_SIZE_Y / 2, "Stage2 CLEAR", 0xffffff);
+		if (CheckSoundMem(ED2) == 0)PlaySoundMem(ED2, DX_PLAYTYPE_LOOP);//ResultÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
+		count = (count + 1) % 100;
+		if (count < 50) {
+			DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage2Clear.png"), true);
+		}
+
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "STAGE2 CLEAR", 0xffffff);
 	}
 	else if (StageCnt == 2) {
-		if (CheckSoundMem(LED) == 0)PlaySoundMem(LED, DX_PLAYTYPE_LOOP);//LEDÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
-		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 3, SCREEN_SIZE_Y / 2, "Stage3 CLEAR", 0xffffff);
-	}
-	//
+		if (CheckSoundMem(LED) == 0)PlaySoundMem(LED, DX_PLAYTYPE_LOOP);//ResultÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
+		count = (count + 1) % 100;
+		if (count < 50) {
+			DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage3Clear.png"), true);
+		}
 
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "GAME CLEAR", 0xffffff);
+	}
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
 		/*time = 0;
@@ -823,12 +825,13 @@ int GameTask::GameResult(void)
 		getSample = false;*/
 		StageCnt++;
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		//GtskPtr = &GameTask::GameInit;
 
-		if (CheckSoundMem(ED1) == 1)StopSoundMem(ED1);
-		if(CheckSoundMem(ED2) == 1)StopSoundMem(ED2);
-		if (CheckSoundMem(LED) == 1) StopSoundMem(LED);	// LEDÇ™çƒê∂íÜÇ»ÇÁLEDÇÃâπÇé~ÇﬂÇÈ
+		if (CheckSoundMem(ED1) == 1)StopSoundMem(ED1);	// ED1Ç™çƒê∂íÜÇ»ÇÁEd1ÇÃâπÇé~ÇﬂÇÈ
+		if (CheckSoundMem(ED2) == 1)StopSoundMem(ED2);	// ED1Ç™çƒê∂íÜÇ»ÇÁEd1ÇÃâπÇé~ÇﬂÇÈ
+
+		if (CheckSoundMem(LED) == 1)StopSoundMem(LED);	// LEDÇ™çƒê∂íÜÇ»ÇÁLEDÇÃâπÇé~ÇﬂÇÈ
 		GtskPtr = &GameTask::GameInit;
+
 		if (StageCnt == StageMax)
 		{
 			UFOFlag = false;
@@ -842,8 +845,9 @@ int GameTask::GameResult(void)
 
 	SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 
-	//DrawString(0, 0, "GameResult", 0xffffff);
-	
+
+	//	DrawString(0, 0, "GameResult", 0xffffff);
+
 	SetFontSize(20);		// Ã´›ƒÇÃª≤Ωﬁ
 	SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
 	ChangeFont("MSÉSÉVÉbÉN");
@@ -857,18 +861,14 @@ int GameTask::GameResult(void)
 
 int GameTask::GameOver(void)
 {
+
 	//ÉTÉEÉìÉh
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// RocketÇ™çƒê∂íÜÇ»ÇÁRocketÇÃâπÇé~ÇﬂÇÈ
-	if (CheckSoundMem(Boost) == 1)StopSoundMem(Boost);	//BoostÇ™çƒê∂íÜÇ»ÇÁBoostÇÃâπÇé~ÇﬂÇÈ
-	if (CheckSoundMem(UFO) == 1)StopSoundMem(UFO);		//UFOÇ™çƒê∂íÜÇ»ÇÁUFOÇÃâπÇé~ÇﬂÇÈ
-	if (CheckSoundMem(UFOBoost) == 1)StopSoundMem(UFOBoost);	//UFOBoostÇ™çƒê∂íÜÇ»ÇÁUFOBoostÇÃâπÇé~ÇﬂÇÈ
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// BomÇ™çƒê∂íÜÇ»ÇÁBomÇÃâπÇé~ÇﬂÇÈ
-	if(CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//EmergencyâπÇ™çƒê∂íÜÇ»ÇÁEmergencyâπÇé~ÇﬂÇÈ
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// MainÇ™çƒê∂íÜÇ»ÇÁMainÇÃâπÇé~ÇﬂÇÈ
-	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over,DX_PLAYTYPE_LOOP);//OverÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
-	
-	//PlaySoundMem(Over, DX_PLAYTYPE_LOOP);
-	
+	if (CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//EmergencyâπÇ™çƒê∂íÜÇ»ÇÁEmergencyâπÇé~ÇﬂÇÈ
+	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over, DX_PLAYTYPE_LOOP);//OverÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
+
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
 		time = 0;
@@ -884,7 +884,6 @@ int GameTask::GameOver(void)
 		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
 		GtskPtr = &GameTask::GameTitle;
 	}
-
 	if (KeyMng::GetInstance().trgKey[P1_SPACE])
 	{
 		time = 0;
@@ -895,7 +894,6 @@ int GameTask::GameOver(void)
 		landingFlag = false;
 		returnFlag = false;
 		getSample = false;
-		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
 		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
 		GtskPtr = &GameTask::GameInit;
 	}
@@ -918,7 +916,9 @@ int GameTask::GameOver(void)
 		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 	}
 
+
 	DrawString(0, 0, "GameResult", 0xffffff);
+
 
 	SetFontSize(50);		// Ã´›ƒÇÃª≤Ωﬁ
 	SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
@@ -955,5 +955,3 @@ std::list<bp_ptr>::iterator GameTask::AddBplist(bp_ptr && bpPtr)
 	itr--;
 	return itr;
 }
-
-

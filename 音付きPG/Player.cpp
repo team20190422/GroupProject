@@ -159,7 +159,6 @@ void Player::Update(void)
 		if (lpGameTask.GetLandCheck())
 		{
 			speed = 0.13f;
-			
 			if (landingTime++ % 3 == 0)
 			{
 				Size -= 0.01f;
