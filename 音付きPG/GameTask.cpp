@@ -1,3 +1,7 @@
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#define new ::new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #include "DxLib.h"
 #include "GameTask.h"
 #include "Player.h"
@@ -224,7 +228,7 @@ int GameTask::GameTitle(void)
 	DrawGraph(title_x, title_y, IMAGE_ID("image/titleRogo.png"), true);
 	//ÉXÉ^Å[Égï`âÊ
 	static int count = 0;
-	int Start_X = 35, Start_Y = 250;
+	int Start_X = 35, Start_Y = 700;
 	count = (count + 1) % 100;
 	if (count < 50) {
 		DrawGraph(Start_X, Start_Y, IMAGE_ID("image/start.png"), true);
@@ -249,6 +253,9 @@ int GameTask::GameTitle(void)
 		GtskPtr = &GameTask::GameInit;
 	}
 	DrawString(0, 0, "GAME_TITLE", 0xffffff);
+
+	DrawFormatStringF(10, 720, GetColor(255, 255, 255), "BackGraundCnt % d", BackGraundCnt);
+
 	ScreenFlip();
 	return 0;
 }
@@ -256,6 +263,9 @@ int GameTask::GameTitle(void)
 // âFíàóVâj
 int GameTask::GameMain(void)
 {
+
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 	ClsDrawScreen();
 	if (CheckSoundMem(Main) == 0)PlaySoundMem(Main, DX_PLAYTYPE_LOOP);//MainÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 
@@ -352,7 +362,6 @@ int GameTask::GameMain(void)
 			StopSoundMem(Main);	////ÉÅÉÇÉäÇ…ì«Ç›çûÇÒÇæMainÇÃâπÉfÅ[É^ÇçÌèú
 			StopSoundMem(Rocket);// RocketÇ™çƒê∂íÜÇ»ÇÁRocketÇÃâπÇé~ÇﬂÇÈ
 			StopSoundMem(Boost);// BoostÇ™çƒê∂íÜÇ»ÇÁBoostÇÃâπÇé~ÇﬂÇÈ
-			StopSoundMem(Bom);	// BomÇ™çƒê∂íÜÇ»ÇÁBomÇÃâπÇé~ÇﬂÇÈ
 			StopSoundMem(Emergency2);
 		}
 		GtskPtr = &GameTask::GameResult;
@@ -366,12 +375,14 @@ int GameTask::GameMain(void)
 		count++;
 		back = new BackGround();
 		backVec.push_back(back);
+		BackGraundCnt++;
 	}
 	else if (count > 300 && count <= 600)
 	{
 		count++;
 		back = new BackGround();
 		backVec.push_back(back);
+		BackGraundCnt++;
 	}
 
 	for (auto itrBG : backVec)
@@ -464,6 +475,7 @@ int GameTask::GameMain(void)
 			count--;
 			delete(*itrBG);
 			itrBG = backVec.erase(itrBG);
+			BackGraundCnt--;
 			break;
 		}
 		else
@@ -691,6 +703,7 @@ int GameTask::GameMain(void)
 	DrawFormatStringF(10, 500, GetColor(255, 255, 255), "íÖó§ %d flag %d hit %d clear %d", landingCheck, landingFlag, hitCheck, clearCheck);
 	DrawFormatStringF(10, 600, GetColor(255, 255, 255), "GameOverTime %d", GameOverTime);
 	DrawFormatStringF(10, 650, GetColor(255, 255, 255), "landingCnt1 %d", landingCnt[1]);
+	DrawFormatStringF(10, 720, GetColor(255, 255, 255), "BackGraundCnt % d", BackGraundCnt);
 	ScreenFlip();
 
 	return 0;
@@ -781,6 +794,7 @@ int GameTask::GameResult(void)
 	//ÉTÉEÉìÉh
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// RocketÇ™çƒê∂íÜÇ»ÇÁRocketÇÃâπÇé~ÇﬂÇÈ
 	if (CheckSoundMem(Boost) == 1)StopSoundMem(Boost);// BoostÇ™çƒê∂íÜÇ»ÇÁBoostÇÃâπÇé~ÇﬂÇÈ
+	StopSoundMem(Bom);	// BomÇ™çƒê∂íÜÇ»ÇÁBomÇÃâπÇé~ÇﬂÇÈ
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// MainÇ™çƒê∂íÜÇ»ÇÁMainÇÃâπÇé~ÇﬂÇÈ
 	if (CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//EmergencyâπÇ™çƒê∂íÜÇ»ÇÁEmergencyâπÇé~ÇﬂÇÈ
 	SetFontSize(50);		// Ã´›ƒÇÃª≤Ωﬁ
@@ -858,6 +872,8 @@ int GameTask::GameResult(void)
 
 	DrawFormatStringF(10, 500, GetColor(255, 255, 255), "íÖó§ %d flag %d return %d clear %d sample %d", landingCheck, landingFlag, returnFlag, clearCheck, getSample);
 
+	DrawFormatStringF(10, 720, GetColor(255, 255, 255), "BackGraundCnt % d", BackGraundCnt);
+
 	ScreenFlip();
 
 	return 0;
@@ -865,7 +881,6 @@ int GameTask::GameResult(void)
 
 int GameTask::GameOver(void)
 {
-
 	//ÉTÉEÉìÉh
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// RocketÇ™çƒê∂íÜÇ»ÇÁRocketÇÃâπÇé~ÇﬂÇÈ
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// BomÇ™çƒê∂íÜÇ»ÇÁBomÇÃâπÇé~ÇﬂÇÈ
@@ -887,6 +902,16 @@ int GameTask::GameOver(void)
 		UFOFlag = false;
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
 		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
+
+		// îwåiÇÃçÌèú
+		std::vector<BackGround*>::iterator itrBG = backVec.begin();
+		while (itrBG != backVec.end())
+		{
+			delete(*itrBG);
+			itrBG = backVec.erase(itrBG);
+			BackGraundCnt--;
+		}
+
 		GtskPtr = &GameTask::GameTitle;
 	}
 	if (KeyMng::GetInstance().trgKey[P1_SPACE])
@@ -935,6 +960,8 @@ int GameTask::GameOver(void)
 
 	DrawFormatStringF(10, 500, GetColor(255, 255, 255), "íÖó§ %d flag %d return %d clear %d sample %d", landingCheck, landingFlag, returnFlag, clearCheck, getSample);
 
+	DrawFormatStringF(10, 720, GetColor(255, 255, 255), "BackGraundCnt % d", BackGraundCnt);
+
 	ScreenFlip();
 
 	return 0;
@@ -944,6 +971,7 @@ int GameTask::GameClear(void)
 {
 	return 0;
 }
+
 
 std::list<obj_ptr>::iterator GameTask::AddObjlist(obj_ptr && objPtr)
 {

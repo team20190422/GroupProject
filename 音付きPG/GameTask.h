@@ -169,6 +169,9 @@ private:
 	int outScreenTime = 0;
 
 	int StageCnt = 0;
+
+	int BackGraundCnt = 0;
+
 	// ‚±‚±‚Ü‚Å
 
 };
