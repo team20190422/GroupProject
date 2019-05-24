@@ -158,7 +158,7 @@ private:
 
 	//‰¹ŠyŠÖŒW
 	int OP, Main, ED1,ED2,LED,Over;	//BGM
-	int Decision, Cancel, Rocket, Bom, Boost;
+	int Decision, Cancel, Rocket, Bom, Boost, Emergency;
 	//‰B‚µƒRƒ}ƒ“ƒhŠÖŒW
 	int UFO;
 	bool UFOFlag = false;
@@ -169,6 +169,8 @@ private:
 	int outScreenTime = 0;
 
 	int StageCnt = 0;
+
+	int framenumber;
 	// ‚±‚±‚Ü‚Å
 
 };

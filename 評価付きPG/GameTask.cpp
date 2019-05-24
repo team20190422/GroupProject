@@ -140,6 +140,7 @@ int GameTask::SystemInit(void)
 	Decision = LoadSoundMem("sound/‘I‘ğ‰¹.ogg");
 	Rocket = LoadSoundMem("sound/ƒƒPƒbƒg•¬Ë.ogg");
 	Boost = LoadSoundMem("sound/ƒKƒXƒo[ƒi[.ogg");
+	Emergency = LoadSoundMem("sound/Œx•ñ.ogg");
 	Bom = LoadSoundMem("sound/explosion3.ogg");
 	UFO = LoadSoundMem("sound/UFO01.ogg");
 	GtskPtr = &GameTask::GameTitle;
@@ -149,7 +150,6 @@ int GameTask::SystemInit(void)
 
 int GameTask::GameInit(void)
 {
-
 	auto riset = [&] {
 		time = 0;
 		AnimCnt = 0;
@@ -220,6 +220,13 @@ int GameTask::GameTitle(void)
 	//ƒ^ƒCƒgƒ‹ƒƒS•`‰æ
 	int title_x = 50, title_y = 50;
 	DrawGraph(title_x, title_y, IMAGE_ID("image/titleRogo.png"), true);
+	//ƒXƒ^[ƒg•`‰æ
+	static int count = 0;
+	int Start_X = 35, Start_Y = 250;
+	count = (count + 1) % 100;
+	if (count < 50) {
+		DrawGraph(Start_X, Start_Y, IMAGE_ID("image/start.png"), true);
+	}
 	//ƒTƒEƒ“ƒhŠÖŒW
 	if (CheckSoundMem(OP) == 0)PlaySoundMem(OP, DX_PLAYTYPE_LOOP);//OP‚ªÄ¶’†‚Å‚È‚¯‚ê‚Î‰¹‚ğ–Â‚ç‚·
 	
@@ -565,6 +572,7 @@ int GameTask::GameMain(void)
 		if (landingCnt[1] > 0 && !energyAnim)
 		{
 			landingCnt[1] -= 10;
+ 			PlaySoundMem(Emergency, DX_PLAYTYPE_BACK);
 		}
 		else
 		{
@@ -593,6 +601,7 @@ int GameTask::GameMain(void)
 			else if(landingCnt[1] <= 5)
 			{
 				ClsDrawScreen();
+				StopSoundMem(Emergency);
 				GtskPtr = &GameTask::GameOver;
 				GameOverTime = 0;
 			}
@@ -695,6 +704,7 @@ int GameTask::GameLanding(void)
 
 	ClsDrawScreen();
 
+	StopSoundMem(Emergency);//Emergency‰¹‚ğ~‚ß‚é
 
 	if (landingCnt[0] < 255 && !landAnimFlag)
 	{
@@ -759,24 +769,39 @@ int GameTask::GameResult(void)
 	//ƒTƒEƒ“ƒh
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocket‚ªÄ¶’†‚È‚çRocket‚Ì‰¹‚ğ~‚ß‚é
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bom‚ªÄ¶’†‚È‚çBom‚Ì‰¹‚ğ~‚ß‚é
-	
+	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// Main‚ªÄ¶’†‚È‚çMain‚Ì‰¹‚ğ~‚ß‚é
+	if (CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//Emergency‰¹‚ªÄ¶’†‚È‚çEmergency‰¹‚ğ~‚ß‚é
 	SetFontSize(50);		// Ì«İÄ‚Ì»²½Ş
 	SetFontThickness(8);	// Ì«İÄ‚Ì‘¾‚³
 	ChangeFont("Ailerons");
 
+	static int count = 0;
+	
 	if (StageCnt == 0) {
 		if (CheckSoundMem(ED1) == 0)PlaySoundMem(ED1, DX_PLAYTYPE_LOOP);//Result‚ªÄ¶’†‚Å‚È‚¯‚ê‚Î‰¹‚ğ–Â‚ç‚·
-		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage1Clear.png"), true);
+		count = (count + 1) % 100;
+		if (count < 50) {
+			DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage1Clear.png"), true);
+		}
+		
 		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "STAGE1 CLEAR", 0xffffff);
 	}
 	else if (StageCnt == 1) {
 		if (CheckSoundMem(ED2) == 0)PlaySoundMem(ED2, DX_PLAYTYPE_LOOP);//Result‚ªÄ¶’†‚Å‚È‚¯‚ê‚Î‰¹‚ğ–Â‚ç‚·
-		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage2Clear.png"), true);
+		count = (count + 1) % 100;
+		if (count < 50) {
+			DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage2Clear.png"), true);
+		}
+		
 		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "STAGE2 CLEAR", 0xffffff);
 	}
 	else if (StageCnt == 2) {
 		if (CheckSoundMem(LED) == 0)PlaySoundMem(LED, DX_PLAYTYPE_LOOP);//Result‚ªÄ¶’†‚Å‚È‚¯‚ê‚Î‰¹‚ğ–Â‚ç‚·
-		DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage3Clear.png"), true);
+		count = (count + 1) % 100;
+		if (count < 50) {
+			DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage3Clear.png"), true);
+		}
+		
 		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "GAME CLEAR", 0xffffff);
 	}
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
@@ -832,6 +857,7 @@ int GameTask::GameOver(void)
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocket‚ªÄ¶’†‚È‚çRocket‚Ì‰¹‚ğ~‚ß‚é
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bom‚ªÄ¶’†‚È‚çBom‚Ì‰¹‚ğ~‚ß‚é
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// Main‚ªÄ¶’†‚È‚çMain‚Ì‰¹‚ğ~‚ß‚é
+	if (CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//Emergency‰¹‚ªÄ¶’†‚È‚çEmergency‰¹‚ğ~‚ß‚é
 	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over,DX_PLAYTYPE_LOOP);//Over‚ªÄ¶’†‚Å‚È‚¯‚ê‚Î‰¹‚ğ–Â‚ç‚·
 	
 	
