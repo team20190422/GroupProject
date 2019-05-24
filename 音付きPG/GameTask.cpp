@@ -141,6 +141,7 @@ int GameTask::SystemInit(void)
 	Rocket = LoadSoundMem("sound/ロケット噴射.ogg");
 	Boost = LoadSoundMem("sound/ガスバーナー.ogg");
 	Emergency = LoadSoundMem("sound/警報.ogg");
+	Emergency2 = LoadSoundMem("sound/警報03.ogg");
 	Bom = LoadSoundMem("sound/explosion3.ogg");
 	UFO = LoadSoundMem("sound/UFO01.ogg");
 	GtskPtr = &GameTask::GameTitle;
@@ -229,6 +230,7 @@ int GameTask::GameTitle(void)
 		DrawGraph(Start_X, Start_Y, IMAGE_ID("image/start.png"), true);
 	}
 	//サウンド関係
+	ChangeVolumeSoundMem(255 * 70 / 100,OP);//OPの音のボリュームを70%に設定
 	if (CheckSoundMem(OP) == 0)PlaySoundMem(OP, DX_PLAYTYPE_LOOP);//OPが再生中でなければ音を鳴らす
 
 																  //隠しコマンド
@@ -351,6 +353,7 @@ int GameTask::GameMain(void)
 			StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
 			StopSoundMem(Boost);// Boostが再生中ならBoostの音を止める
 			StopSoundMem(Bom);	// Bomが再生中ならBomの音を止める
+			StopSoundMem(Emergency2);
 		}
 		GtskPtr = &GameTask::GameResult;
 	}
@@ -554,6 +557,7 @@ int GameTask::GameMain(void)
 		{
 			landingCnt[1] -= 20;
 			limitTime++;
+			if(CheckSoundMem(Emergency2) == 0)PlaySoundMem(Emergency2, DX_PLAYTYPE_BACK);
 		}
 		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 	}
@@ -566,6 +570,7 @@ int GameTask::GameMain(void)
 		{
 			landingCnt[1] += 10;
 			SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+			if (CheckSoundMem(Emergency2) == 1)StopSoundMem(Emergency2);
 
 		}
 	}
@@ -768,8 +773,6 @@ int GameTask::GameResult(void)
 	int Result_X = -100, Result_Y = 0;
 	DrawGraph(Result_X, Result_Y, IMAGE_ID("image/result.png"), true);
 
-	int Clear_X = 0, Clear_Y = 250;
-
 	//タイトル文字描画
 	int result_x = 50;
 	int result_y = 50;
@@ -777,7 +780,7 @@ int GameTask::GameResult(void)
 	DrawGraph(result_x, result_y, IMAGE_ID("image/ResultRogo.png"), true);
 	//サウンド
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// Rocketが再生中ならRocketの音を止める
-	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
+	if (CheckSoundMem(Boost) == 1)StopSoundMem(Boost);// Boostが再生中ならBoostの音を止める
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// Mainが再生中ならMainの音を止める
 	if (CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//Emergency音が再生中ならEmergency音を止める
 	SetFontSize(50);		// ﾌｫﾝﾄのｻｲｽﾞ
@@ -785,7 +788,7 @@ int GameTask::GameResult(void)
 	ChangeFont("Ailerons");
 
 	static int count = 0;
-
+	int Clear_X = 0, Clear_Y = 250;
 	if (StageCnt == 0) {
 		if (CheckSoundMem(ED1) == 0)PlaySoundMem(ED1, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
 		count = (count + 1) % 100;
@@ -793,7 +796,7 @@ int GameTask::GameResult(void)
 			DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage1Clear.png"), true);
 		}
 
-		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "STAGE1 CLEAR", 0xffffff);
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 3, SCREEN_SIZE_Y / 2, "STAGE1 CLEAR", 0xffffff);
 	}
 	else if (StageCnt == 1) {
 		if (CheckSoundMem(ED2) == 0)PlaySoundMem(ED2, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
@@ -802,16 +805,17 @@ int GameTask::GameResult(void)
 			DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage2Clear.png"), true);
 		}
 
-		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "STAGE2 CLEAR", 0xffffff);
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 3, SCREEN_SIZE_Y / 2, "STAGE2 CLEAR", 0xffffff);
 	}
 	else if (StageCnt == 2) {
+		ChangeVolumeSoundMem(255 * 70 / 100, LED);//LEDの音のボリュームを70%に設定
 		if (CheckSoundMem(LED) == 0)PlaySoundMem(LED, DX_PLAYTYPE_LOOP);//Resultが再生中でなければ音を鳴らす
 		count = (count + 1) % 100;
 		if (count < 50) {
 			DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Stage3Clear.png"), true);
 		}
 
-		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "GAME CLEAR", 0xffffff);
+		DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 3, SCREEN_SIZE_Y / 2, "GAME CLEAR", 0xffffff);
 	}
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
 	{
@@ -867,6 +871,7 @@ int GameTask::GameOver(void)
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// Bomが再生中ならBomの音を止める
 	if (CheckSoundMem(Main) == 1)StopSoundMem(Main);// Mainが再生中ならMainの音を止める
 	if (CheckSoundMem(Emergency) == 1)StopSoundMem(Emergency);//Emergency音が再生中ならEmergency音を止める
+	if (CheckSoundMem(Emergency2) == 1)StopSoundMem(Emergency2);
 	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over, DX_PLAYTYPE_LOOP);//Overが再生中でなければ音を鳴らす
 
 	if (KeyMng::GetInstance().trgKey[P1_ENTER])
