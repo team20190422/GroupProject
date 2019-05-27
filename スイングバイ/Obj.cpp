@@ -7,7 +7,7 @@ Obj::Obj()
 {
 }
 
-Obj::Obj(const int(&trgKey)[6], const int(&oldKey)[6])
+Obj::Obj(const int(&trgKey)[KEY_MAX], const int(&oldKey)[KEY_MAX])
 {
 }
 
@@ -40,21 +40,9 @@ RECT &Obj::GetRect()
 	return this->rect;
 }
 
-float & Obj::GetSpeed()
+const int & Obj::GetTimer(void)
 {
-	return this->speed;
-}
-
-
-bool Obj::SetFlag(bool flag)
-{
-	this->flag = flag;
-	return true;
-}
-
-double &Obj::GetAngle()
-{
-	return this->angel;
+	return 0;
 }
 
 const VECTOR2 & Obj::GetSize(void)
@@ -78,6 +66,45 @@ const VECTOR3 & Obj::GetPos(void)
 	return this->pos;
 }
 
+bool Obj::SetAngle(float Angle)
+{
+	this->Angle = Angle;
+	return true;
+}
+
+const float & Obj::GetAngle(void)
+{
+	return this->Angle;
+}
+
+bool Obj::SetDistance(float distance)
+{
+	this->distance = distance;
+	return true;
+}
+
+const float & Obj::GetDistance()
+{
+	return this->distance;
+}
+
+const VECTOR3 & Obj::GetVec()
+{
+	return this->Vec;
+}
+
+bool Obj::SetVec(VECTOR3 vec)
+{
+	this->Vec = vec;
+	return false;
+}
+
+const VECTOR3 & Obj::Normalize(VECTOR3 i,float mgn)
+{
+	i.x /= mgn;
+	i.y /= mgn;
+	return i;
+}
 
 void Obj::SetMove(void)
 {

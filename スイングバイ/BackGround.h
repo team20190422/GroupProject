@@ -1,6 +1,8 @@
 #pragma once
 #include "Obj.h"
 
+//class GameTask;
+
 class BackGround :public Obj
 {
 public:
@@ -10,16 +12,15 @@ public:
 	void Init();
 	void Update();
 	void Draw();	
-	bool SetFlag(bool flag);
 
-	int removeFlag;
+	bool removeFlag;
+
+
 private:
-	float vy = 0;
-	float vy2 = 0;
+	float vyS = 0;
+	float vyM = 0;
 	int randomX;
-	int randomY_2;
 	int randomY;
 	int count;
-	int udFlag;	//画面スクロールの上下判定フラグ
-	const int(&j)[6] = { 0 };
+	const int(&j)[KEY_MAX] = { 0 };
 };

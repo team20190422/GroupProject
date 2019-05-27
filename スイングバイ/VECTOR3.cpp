@@ -118,7 +118,7 @@ VECTOR3 operator-(const VECTOR3 & i, const VECTOR3 & j)
 {
 	VECTOR3 vec;
 	vec.x = i.x - j.x;
-	vec.x = i.y - j.y;
+	vec.y = i.y - j.y;
 	return vec;
 	// 一行で書く方法
 	//return VECTOR3(i.x - j.x, i.y - j.y);
@@ -132,6 +132,11 @@ VECTOR3 operator*(float j, const VECTOR3 & i)
 	return vec;
 	// 一行で書く方法
 	//return VECTOR3(j * i.x,j * i.y);
+}
+
+VECTOR3 operator*(const VECTOR3 & i, const VECTOR3 & j)
+{
+	return VECTOR3(i.x * j.x, i.y * j.y);
 }
 
 VECTOR3 operator*(const VECTOR3 & i, float j)

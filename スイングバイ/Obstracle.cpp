@@ -2,11 +2,20 @@
 #include "GameTask.h"
 #include "ImageMng.h"
 
+
+
+
 Obstracle::Obstracle()
 {
-	pos = { (float)SCREEN_SIZE_X / 2,(float)SCREEN_SIZE_Y};//初期座標
-	speed = 5.0f;	//ｽﾋﾟｰﾄﾞ
+	pos = { (float)SCREEN_SIZE_X / 2,(float)SCREEN_SIZE_Y};
+	speed = 5.0f;
+	o.left = (long)(pos.x - size.x / 2);
+	o.right = (long)(pos.x + size.x / 2);
+	o.top = (long)(pos.y - size.y / 2);
+	o.bottom = (long)(pos.y + size.y / 2);
+
 }
+
 
 Obstracle::~Obstracle()
 {
@@ -14,38 +23,32 @@ Obstracle::~Obstracle()
 
 void Obstracle::Update()
 {
-	//オブストラクルRECTの初期値を設定
-	o.left = pos.x - size.x / 2;
-	o.right = pos.x + size.x / 2;
-	o.top = pos.y - size.y / 2;
-	o.bottom = pos.y + size.y / 2;
 	SetMove();
-	//矩形のサイズを再設定
+	//矩形のサイズを設定(障害物)
 	int o_width = o.right - o.left;
 	int o_height = o.bottom - o.top;
 	SetRect(&o,pos.x - size.x / 2, pos.y - size.y / 2,
 			   pos.x + o_width / 2, pos.y + o_height / 2);
 	//矩形のサイズを描画(デバッグ用)
-	DrawBox(o.left,o.top, o.right, o.bottom, GetColor(255, 0, 0), false);
+	//DrawBox(o.left,o.top, o.right, o.bottom, GetColor(255, 0, 0), false);
+	//DrawFormatString(10, 40, GetColor(255, 255, 255), "posX　%f  posY %f", pos.x, pos.y);
 }
 
 void Obstracle::Draw()
 {
-	//画像の描画
 	DrawGraph(pos.x - size.x/2, pos.y - size.y/2, IMAGE_ID(imageName),true);
-	//隕石が落ちてくる位置にラインを描画
 	DrawLine(pos.x, pos.y - SCREEN_SIZE_Y, pos.x, pos.y+ SCREEN_SIZE_Y, GetColor(255, 255, 255), true);
 }
 
 void Obstracle::SetMove()
 {
 	pos.y += speed;
-	if (pos.y > SCREEN_SIZE_Y) {	//画面外（下）に行ったら座標を画面の上に変更
+	if (pos.y > SCREEN_SIZE_Y) {
 		pos.y = SCREEN_SIZE_Y - SCREEN_SIZE_Y;
-		pos.x = GetRand(SCREEN_SIZE_X);	//X座標をランダムで取得する
+		pos.x = GetRand(SCREEN_SIZE_X);
 	}
 }
-//RECTの値を取得
+
 RECT  &Obstracle::GetRect()
 {
 	return this->o;

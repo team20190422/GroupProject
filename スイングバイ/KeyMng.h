@@ -9,7 +9,8 @@ enum KEY_CODE {
 	P1_LEFT,
 	P1_SPACE,
 	P1_ENTER,
-	
+	P1_LCtrl,
+
 	KEY_MAX
 };
 

@@ -10,7 +10,7 @@ public:
 	void Update();
 	void Draw();
 	void SetMove();
-	RECT &GetRect();
+	RECT  &GetRect();
 	RECT o;
 private:
 	VECTOR3 pos = { 0.0f,0.0f };

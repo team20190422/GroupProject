@@ -1,7 +1,6 @@
 #include <Dxlib.h>
 #include "GameTask.h"
 #include "BackGround.h"
-#include "Player.h"
 
 BackGround::BackGround():Obj(j, j)
 {
@@ -10,40 +9,54 @@ BackGround::BackGround():Obj(j, j)
 
 BackGround::~BackGround()
 {
-
 }
 
 void BackGround::Init()
 {
 	count = GameTask::GetInstance().SetCount();
 	removeFlag = false;
-	udFlag = false;		//false:上から下のスクロール,true:下から上のスクロール
 	randomX = GetRand(SCREEN_SIZE_X);
-	if(count <= 300)
+	if (lpGameTask.playerVec.y < 0)
 	{
-		randomY = GetRand(SCREEN_SIZE_Y);
-		randomY_2 = GetRand(SCREEN_SIZE_Y);
+		if (count <= 300)
+		{
+			randomY = GetRand(SCREEN_SIZE_Y);
+		}
+		else
+		{
+			randomY = GetRand(SCREEN_SIZE_Y) - 800;
+		}
 	}
-	else
+	else if(lpGameTask.playerVec.y > 0)
 	{
-		randomY = GetRand(SCREEN_SIZE_Y) - 800;
-		randomY_2 = GetRand(SCREEN_SIZE_Y) + 800;
+		if (count <= 300)
+		{
+			randomY = GetRand(SCREEN_SIZE_Y);
+		}
+		else
+		{
+			randomY = GetRand(SCREEN_SIZE_Y) + 800;
+		}
 	}
+	
 }
 
 void BackGround::Update()
 {
-	if (udFlag == false) {
-		vy += 0.2;
-		if (randomY + vy > SCREEN_SIZE_Y)
+	if (lpGameTask.playerVec.y < 0)
+	{
+		vyS += 0.1f;
+		vyM += 0.2f;
+		if (randomY + vyS > SCREEN_SIZE_Y || randomY + (vyM / 2) > SCREEN_SIZE_Y)
 		{
 			removeFlag = true;
 		}
 	}
-
-	if (udFlag == true) {
-		vy2 -= 0.2;
-		if (randomY - vy2 > SCREEN_SIZE_Y + 800)
+	else if (lpGameTask.playerVec.y > 0)
+	{
+		vyS -= 0.1f;
+		vyM -= 0.2f;
+		if (randomY + vyS < 0 || randomY + (vyM / 2) < 0)
 		{
 			removeFlag = true;
 		}
@@ -52,32 +65,13 @@ void BackGround::Update()
 
 void BackGround::Draw()
 {
-	if (udFlag == false) {
-		if (randomX % 2 == 0)
-		{
-			DrawCircle(randomX, randomY + vy, 1, 0xffffff, true);
-		}
-		else if (randomX % 3 == 0)
-		{
-			DrawCircle(randomX, randomY + vy, 2, 0xffffff, true);
-		}
+	//int col = GetRand(255);
+	if (randomX % 2 == 0)
+	{
+		DrawCircle(randomX, randomY + vyS, 1, GetColor(255,255,255), true);
 	}
-
-	if (udFlag == true) {
-		if (randomX % 2 == 0)
-		{
-			DrawCircle(randomX, randomY_2 + vy2, 1, 0xffffff, true);
-		}
-		else if (randomX % 3 == 0)
-		{
-			DrawCircle(randomX, randomY_2 + vy2, 2, 0xffffff, true);
-		}
-	}
-}
-
-//udFlagをセットする
-bool BackGround::SetFlag(bool flag)
-{
-	this->udFlag = flag;
-	return true;
+	else if(randomX % 3 == 0)
+	{
+		DrawCircle(randomX, randomY + vyM, 2, GetColor(255,255,255), true);
+	}	
 }

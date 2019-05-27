@@ -1,11 +1,16 @@
 #include "Player.h"
 #include "ImageMng.h"
-#include "GameTask.h"
+#include "Particle.h"
 
-Player::Player(const int(&trgKey)[6], const int(&oldKey)[6]) :Obj(trgKey, oldKey)
+constexpr unsigned int posY_Max = (float)SCREEN_SIZE_Y - (float)SCREEN_SIZE_Y / 3;
+
+Player::Player(const int(&trgKey)[KEY_MAX], const int(&oldKey)[KEY_MAX]) :Obj(trgKey, oldKey)
 {
-	pos = { (float)SCREEN_SIZE_X / 2, (float)SCREEN_SIZE_Y };
+	particleList.clear();
+	MaxFlag = false;
+	pos = { (float)SCREEN_SIZE_X / 2, (float)SCREEN_SIZE_Y - (float)SCREEN_SIZE_Y / 3 };
 	radianPos = { pos.x,pos.y };
+	plPos = pos;
 }
 
 
@@ -15,107 +20,529 @@ Player::~Player()
 
 void Player::Draw(void)
 {
-	int mouseX, mouseY;
 
-	GetMousePoint(&mouseX, &mouseY);
+	Angle = atan2(radianPos.y - pos.y, radianPos.x - pos.x) + 1.5f;
+	if (lpGameTask.setCount)
+	{
+		count -= 6.0f;
+		vec = -vec;
+		lpGameTask.setCount = false;
+	}
 
-	Angle = (double)atan2(radianPos.y - pos.y, radianPos.x - pos.x) + 1.5f;
+	turnPos.x = pos.x + (13 * cos(count / 2));
+	turnPos.y = pos.y + (13 * sin(count / 2));
 
-	radianPos.x = pos.x + (20 * cos(count / 2));
-	radianPos.y = pos.y + (20 * sin(count / 2));
+	if (sideCheck)
+	{
+		sidePos.x = turnPos.x + ((13 * sin(-count / 2)) * (sideCheck == 2 ? 1 : -1));
+		sidePos.y = turnPos.y + ((13 * cos(count / 2)) * (sideCheck == 2 ? 1 : -1));
 
-	/*VECTOR radian = VTransform(VGet(1, 0, 0), master);
-	MATRIX tmp = MGetRotAxis(radian, Angle);
-	master = MMult(master, tmp);*/
-	DrawFormatStringF(10, 10, GetColor(255, 255, 255), "角度　%f", Angle);
-	DrawFormatString(10, 40, GetColor(255, 255, 255), "posX　%f  posY %f", pos.x , pos.y);
-	DrawFormatString(10, 70, GetColor(255, 255, 255), "vecX　%f  vecY %f", vec.x, vec.y);
-	DrawFormatString(10, 100, GetColor(255, 255, 255), "MposX　%f  MposY %f", mouseX,mouseY);
-	DrawFormatString(10, 130, GetColor(255, 255, 255), "RdX　%f  RdY %f", radianPos.x, radianPos.y);
-	DrawFormatString(10, 160, GetColor(255, 255, 255), "speed　%f", speed);
+	}
+	else
+	{
+		sidePos.x = pos.x + (13 * cos(count / 2));
+		sidePos.y = pos.y + (13 * sin(count / 2));
+	}
 
-	DrawRotaGraph(pos.x, pos.y, 1.0, Angle, IMAGE_ID(imageName), true);
+	for (auto itr : particleList)
+	{
+		itr->Draw();
+		itr->Update();
+
+	}
+	for (auto itr : sideParticleList)
+	{
+		itr->Draw();
+		itr->Update();
+	}
+
+	DrawRotaGraph(pos.x, pos.y, Size, Angle, IMAGE_ID(imageName), true);
+
+	if (pos.x < -32)
+	{
+		lpGameTask.OutOfScreen = true;
+		DrawTriangle(0, pos.y, 20, pos.y + 5, 20, pos.y - 5, 0xffffff, true);
+		DrawCircle(45, pos.y, 35, GetColor(255, 255, 255), true);
+		DrawCircle(45, pos.y, 32, GetColor(0, 0, 0), true);
+		DrawRotaGraph(45, pos.y, 1.0, Angle, IMAGE_ID(imageName), true);
+	}
+	else if(pos.x > SCREEN_SIZE_X + PLAYER_SIZE)
+	{
+		lpGameTask.OutOfScreen = true;
+		DrawTriangle(SCREEN_SIZE_X, pos.y, SCREEN_SIZE_X - 20, pos.y + 5, SCREEN_SIZE_X - 20, pos.y - 5, 0xffffff, true);
+		DrawCircle(SCREEN_SIZE_X - 45, pos.y, 35, GetColor(255, 255, 255), true);
+		DrawCircle(SCREEN_SIZE_X - 45, pos.y, 32, GetColor(0, 0, 0), true);
+		DrawRotaGraph(SCREEN_SIZE_X - 45, pos.y, 1.0, Angle, IMAGE_ID(imageName), true);
+	}
+	else
+	{
+		lpGameTask.OutOfScreen = false;
+	}
+
 	DrawLine(pos.x-16, pos.y, pos.x + 16, pos.y, GetColor(255, 255, 255), true);
 	DrawLine(pos.x, pos.y -16, pos.x, pos.y + 16, GetColor(0, 255, 255), true);
-	//DrawCircle(radianPos.x, radianPos.y,10, GetColor(255, 255, 255),true);
 
+	DrawLine(pos.x, pos.y, newPrePos.x + pos.x,newPrePos.y + pos.y, GetColor(0, 255, 255), true);
+	DrawLine(pos.x, pos.y, newPos.x, newPos.y, GetColor(0, 255, 0), true);
+
+
+	/*DrawCircle(turnPos.x, turnPos.y,2, GetColor(255, 255, 255),true);
+	DrawCircle(radianPos.x, radianPos.y, 2, GetColor(255, 255, 255), true);
+	DrawCircle(newPos.x, newPos.y, 2, GetColor(255, 255, 255), true);
+	DrawCircle(newPrePos.x + pos.x, newPrePos.y + pos.y, 2, GetColor(255, 255, 255), true);
+
+	DrawCircle(sidePos.x, sidePos.y, 2, GetColor(255, 255, 0), true);*/
+
+	SetFontSize(25);		// ﾌｫﾝﾄのｻｲｽﾞ
+	SetFontThickness(5);	// ﾌｫﾝﾄの太さ
+	ChangeFont("Ailerons");
+
+	// システムUI
+	DrawGraph(105, 75, IMAGE_ID("image/speedUI_under.png"), true);
+	DrawGraph(105, 105, IMAGE_ID("image/speedUI_under.png"), true);
+	DrawBox(110, 155, 110 + (energy * 1.4f), 160, GetColor(255, 55 + (energy / 5), 55 + (energy / 5)), true);
+	DrawGraph(105, 135, IMAGE_ID("image/engine_under.png"), true);
+
+	//DrawExtendGraph(5, 35, 145, 65, IMAGE_ID("image/speed.png"), true);
+	//DrawExtendGraph(-50, 70, 90, 110, IMAGE_ID("image/distance.png"), true);
+	//DrawExtendGraph(5, 100, 145, 150, IMAGE_ID("image/fuel.png"), true);
+
+	DrawGraph(100, 63, IMAGE_ID("image/sokudoUI.png"), true);
+	DrawGraph(100, 93, IMAGE_ID("image/kyoriUI.png"), true);
+	DrawGraph(100, 123, IMAGE_ID("image/nenryouUI.png"), true);
+
+	DrawFormatString(175, 68, GetColor(255, 255, 255), "%.0fkm/s", speed * 4);
+	DrawFormatString(175, 98, GetColor(255, 255, 255), "%dkm", (int)lpGameTask.targetDistance);
+	DrawFormatString(200, 128, GetColor(255, 255, 255), "%.0fl", energy);
+
+
+	SetFontSize(20);		// ﾌｫﾝﾄのｻｲｽﾞ
+	SetFontThickness(8);	// ﾌｫﾝﾄの太さ
+	ChangeFont("MSゴシック");
+	
+	if (energy < 0)
+	{
+		energy = 0;
+	}
 }
 
 void Player::Update(void)
 {
-	//プレイヤーRECTの初期値を設定
-	p.left = pos.x - size.x / 2;
-	p.right = pos.x + size.x / 2;
-	p.top = pos.y - size.y / 2;
-	p.bottom = pos.y + size.y / 2;
-	SetMove();
-	//矩形のサイズを再設定(プレイヤー)
-	int p_width = p.right - p.left;
-	int p_height = p.bottom - p.top;
-	SetRect(&p, pos.x - size.x / 2, pos.y - size.y / 2,
-		        pos.x + p_width / 2,pos.y + p_height / 2);
-	//矩形のサイズを描画(デバッグ用)
-	DrawBox(p.left,p.top,p.right,p.bottom, GetColor(255,0,0), false);
+	radianPos.x = pos.x + (100 * cos(count / 2));
+	radianPos.y = pos.y + (100 * sin(count / 2));
 
+
+	PreAngle = atan2(radianPos.y - pos.y, radianPos.x - pos.x) + 1.5f;
+	PreAngle2 = atan2(newPrePos.y, newPrePos.x) + 1.5f;
+
+	
+	newPos.x = (pos.x) + (50 * cos(newcount / 2));
+	newPos.y = (pos.y) + (50 * sin(newcount / 2));
+
+
+	p.left = (long)(pos.x - size.x / 2);
+	p.right = (long)(pos.x + size.x / 2);
+	p.top = (long)(pos.y - size.y / 2);
+	p.bottom = (long)(pos.y + size.y / 2);
+
+	if (sideParticleList.size() > 0)
+	{
+		//(*sideParticle)->SetPos(turnPos + VECTOR3((sideCheck == 0 ? 0 : (sideCheck == 1 ? -10 : 10)), 0));
+	}
+	if (!lpGameTask.GetHitCheck())
+	{
+		if (lpGameTask.GetLandCheck())
+		{
+			speed = 0.13f;
+			if (landingTime++ % 3 == 0)
+			{
+				Size -= 0.01f;
+			}
+			if (Size <= 0.7)
+			{
+				lpGameTask.landingFlag = true;
+			}
+		}
+		else
+		{
+			if (Size != 1.0f)
+			{
+				Size = 1.0f;
+			}
+		}
+
+		SetMove();
+	}
+	else 
+	{
+		for (int i = 0; i < particleMax; i++)
+		{
+			if (particleList.size() > 0)
+			{
+				if (!(particleList.empty()))
+				{
+					particleList.pop_front();
+				}
+			}
+		}
+		speed = 0;
+		distance = 1000;
+		gVec = VECTOR3(0,0);
+
+	}
+
+	if (energy < 20)
+	{
+		WarningDownFlag = true;
+		warningPosUp.x += 1;
+		//if (warningPosUp.x > SCREEN_SIZE_X)
+		//{
+		//	warningPosUp.x = -450;
+		//	DrawGraph(warningPosUp.x, warningPosUp.y, IMAGE_ID("image/warning!.png"), true);
+		//}
+	}
+	if (WarningDownFlag == true)
+	{
+		warningDown++;
+		if (warningDown > 35)
+		{
+			warningDown = 35;
+			lineFlag = true;
+		}
+		DrawBox(0, 0, SCREEN_SIZE_X, warningDown, 0xffff00, true);
+
+		if (lineFlag == true)
+		{
+			//削除
+			if (BlackLine.size() > 0)
+			{
+				if (BlackLine.begin()->x > (SCREEN_SIZE_X / 10))
+				{
+					BlackLine.erase(BlackLine.begin());
+					blSize--;
+				}
+			}
+			DrawFormatString(200, 400, 0xffffff, "Size:%d", blSize);
+
+			// 追加
+			if (blSize <= 45)
+			{
+				int Size = BlackLine.size();
+				BlackLine.push_back(VECTOR3((10 * -Size), 0));
+				blSize++;
+			}
+			lineCnt++;
+
+			if (lineCnt % 2 == 0 && blackLine >= -15)
+			{
+				blackLine--;
+			}
+			for (int j = 0; j < BlackLine.size(); j++)
+			{
+				for (int i = 0; i < 5; i++)
+				{
+					DrawLine((BlackLine[j].x + i) + (blSize * 10), warningDown - 2, (BlackLine[j].x + i + 5) + (blSize * 10), (warningDown + blackLine), 0x000000, true);
+				}
+				BlackLine[j].x++;
+				DrawFormatString(200, 450, 0xffffff, "frontX :%f", BlackLine.begin()->x);
+
+			}
+
+				
+		}
+		//DrawGraph(warningPosUp.x, warningPosUp.y, IMAGE_ID("image/warning!.png"), true);
+	}
+
+	lpGameTask.SetEnergy(energy);
+	distance = GameTask::GetInstance().distance;
+	EofG = GameTask::GetInstance().gravity;
+	gVec = GameTask::GetInstance().PandPvec;
+	//DrawFormatString(10, 400, GetColor(255, 255, 255), "Angle:%ff", Angle);
+	//DrawFormatString(10, 380, GetColor(255, 255, 255), "gvecX:%f gvecY:%f", gVec.x, gVec.y);*/
 }
 
-//RECTの値を取得
 RECT  &Player::GetRect()
 {
 	return this->p;
 }
 
-double Player::Abstract(double i)
+VECTOR3 Player::Abstract(VECTOR3 i)
 {
+	return VECTOR3((i.x < 0 ? -0.5 : i.x == 0 ? 0 : 0.5),(i.y < 0 ? -0.5 : i.y == 0 ? 0 : 0.5));
+}
 
-	return (i < 0 ? -i : i);
-}
-//速度の値を取得
-float & Player::GetSpeed()
+VECTOR3 Player::OneVec(VECTOR3 vec)
 {
-	return this->speed;
+	return VECTOR3(vec.x == 0 ? 0 : (vec.x < 0 ? -1 : 1), vec.y == 0 ? 0 : (vec.y < 0 ? -1 : 1));
 }
-//角度の値を取得
-double & Player::GetAngle()
+
+bool Player::SetPos(VECTOR3 pos)
 {
-	return this->Angle;
+	this->pos = pos;
+	return true;
 }
+
+const VECTOR3 & Player::GetPos(void)
+{
+	return this->pos;
+}
+
+VECTOR3 Player::AddVec(VECTOR3 pTop,VECTOR3 fTop)
+{
+	return this->vec = pTop + fTop;
+}
+
 
 void Player::SetMove(void)
 {
-	/*vec.x = cos(Angle) * vec.x + -sin(Angle) * vec.y;
-	vec.y = sin(Angle) * vec.x + cos(Angle) * vec.y;*/
-	//VECTOR front = VTransform(VGet(pos.x, pos.y, 1.0f),master);
 
-	if (KeyMng::GetInstance().newKey[P1_SPACE])
+	bool particleFlag = false;
+	bool sideFlag = false;
+	float particleCheck = 1.0f;
+	// 単位ベクトル1
+	//Obj::Normalize(gVec, distance);
+	// 単位ベクトル2
+	float a = abs(radianPos.x - pos.x);
+	float b = abs(radianPos.y - pos.y);
+	float vecMgn = sqrt((a * a) + (b * b));
+	/////////////
+	auto addVec = AddVec((Obj::Normalize((gVec), distance) * EofG), vec);// Obj::Normalize(vec, vecMgn));
+
+	SetVec(addVec);
+	plPos += lpGameTask.GetScrollPos();
+
+
+	//DrawFormatString(10, 350, GetColor(255, 255, 255), "addVecX:%f addVecY:%f", addVec.x,addVec.y);
+	if ((!lpGameTask.GetHitCheck()))
 	{
-		if(speed < speedMax)
-		speed += 0.1f;
+		if (plPos.y > playerPosMaxY || pos.y <= posY_Max)
+		{
+			lpGameTask.plPosMaxFlag = false;
+			lpGameTask.SetScrollPos(-(addVec * speed));
+		}
+		else
+		{
+			lpGameTask.plPosMaxFlag = true;
+			pos.y += (addVec.y * speed);
+		}
+		MaxFlag = false;
 	}
 
-	if (KeyMng::GetInstance().newKey[P1_UP])
+	if (pos.y <= posMax.y - addVec.y)
 	{
-		if(speed < speedMax)
-		speed += 0.02f;
+		MaxFlag = true;
+		pos.x += addVec.x * speed;
 	}
-	if (KeyMng::GetInstance().newKey[P1_DOWN])
+	else
 	{
-		if(speed > 0)
-		speed -= 0.02f;
+		pos.x += addVec.x *speed;
+		MaxFlag = true;
+
+	}
+	SetPos(pos);
+
+	DrawLine((int)radianPos.x, (int)radianPos.y, pos.x, pos.y, 0x0000ff, true);
+
+	for (int i = 0; i < particleMax; i++)
+	{
+		if (particleList.size() > 0)
+			particleTime[0][i]++;
+
+		/*if (sideParticleList.size() > 0)
+			particleTime[sideCheck][playerTime]++;*/
+
 	}
 
-	vec.x = (sin(Angle) * speed);
-	vec.y = -(cos(Angle) * speed);
-
-	pos += vec;
-
-	if (KeyMng::GetInstance().newKey[P1_RIGHT])
+	if (KeyMng::GetInstance().trgKey[P1_SPACE] && energy > 0)
 	{
-		count += 0.12f;
+		//particleTime++;
+		
+		if (speed < speedMax)
+		{
+			speed += 3.0f;
+		}
+		energy -= 10;
+		rolInc = 0;
+
+		particleFlag = true;
+		particleCheck = 5.0f;
+		vec.x = sin(Angle);
+		vec.y = -(cos(Angle));
+
 	}
-	else if (KeyMng::GetInstance().newKey[P1_LEFT])
+	else if (KeyMng::GetInstance().newKey[P1_SPACE] && energy > 0)
 	{
-		count -= 0.12f;
+		particleFlag = true;
+		particleCheck = 5.0f;
+		newPrePos = (radianPos - pos);
+		newPrecount = count;
+		newcount = count;
 	}
+
+	else if (KeyMng::GetInstance().newKey[P1_UP] && energy > 0)
+	{
+		if (speed < speedMax)
+		{
+			speed += 0.01f;
+		}
+		particleFlag = true;
+		vec.x = sin(Angle);
+		vec.y = -(cos(Angle));
+		newPrePos = (radianPos - pos);
+		newPrecount = count;
+		energy -= 0.1f;
+		//newcount = count;
+		if (count != newcount)
+		{
+			if (count > newcount)
+			{
+				newcount += 0.01f;
+			}
+			else if (count < newcount)
+			{
+				newcount -= 0.01f;
+			}
+			else
+			{
+
+			}
+		}
+
+	}
+	if (KeyMng::GetInstance().newKey[P1_DOWN] && energy > 0)
+	{
+		if (speed >= 0.05f)
+		{
+			speed -= 0.03f;
+		}
+	}
+	
+
+	VECTOR3 sideVec(radianPos - pos);
+
+	// 角度変更
+	if (!lpGameTask.GetLandCheck())
+	{
+		if (KeyMng::GetInstance().newKey[P1_RIGHT])
+		{
+			rolInc += 0.0015f;
+			count += 0.005f + rolInc;
+			sideFlag = true;
+			sideCheck = 1;
+			newcount = newPrecount;
+			lrFlag = 1;
+		}
+		else if (KeyMng::GetInstance().newKey[P1_LEFT])
+		{
+			rolInc -= 0.0015f;
+			count -= 0.005f - rolInc;
+			sideFlag = true;
+			sideCheck = 2;
+			newcount = newPrecount;
+			lrFlag = -1;
+		}
+		else
+		{
+			if (lrFlag == 1)
+			{
+				count += 0.005f + rolInc;
+			}
+			else if (lrFlag == -1)
+			{
+				count -= 0.005f - rolInc;
+			}
+			else
+			{
+
+			}
+			//sideFlag = false;
+			sideCheck = 0;
+			if (sideParticleList.size() > 0)
+			{
+				if (!(sideParticleList.empty()))
+				{
+					sideParticleList.pop_front();
+
+				}
+			}
+		}
+	}
+	else
+	{
+
+	}
+
+	if (speed > speedMax)
+	{
+		speed -= 0.1f;
+	}
+
+	if (particleFlag && !lpGameTask.GetLandCheck())
+	{
+		float parMax = (KeyMng::GetInstance().newKey[P1_SPACE] ? 2.0f : 2.9f);
+		for (float f = 0.0f; f <parMax; f += 0.1f)
+		{
+			particle = AddObjlist(std::make_shared<Particle>(VECTOR3(pos.x, pos.y - (10 * vec.y)), (vec*f)*particleCheck, 0));
+		}
+	}
+	if (sideFlag && !lpGameTask.GetLandCheck())
+	{
+		for (float f = 0.0f; f < 1.0f; f += 0.1f)
+		{
+			if (sidePos != turnPos)
+			{
+				sideParticleList.push_back(std::make_shared<Particle>(turnPos, OneVec(turnPos - sidePos), sideCheck));
+				sideParticle = sideParticleList.end();
+				sideParticle--;
+			}
+		}
+	}
+
+	//　ｴﾝｼﾞﾝﾊﾟｰﾃｨｸﾙの消去
+	for (int i = 0; i < particleMax; i++)
+	{
+		if (particleList.size() > 0)
+		{
+
+			if (particleList.front()->GetTimer() > 12 || particleTime[0][0] > 12)
+			{
+
+ 				if (!(particleList.empty()))
+				{
+					particleList.pop_front();
+
+				}
+			}
+		}
+		else
+		{
+			particleTime[0][i] = 0;
+		}
+
+		if (sideParticleList.size() > 0)
+		{
+			if (sideParticleList.front()->GetTimer() > 15)
+			{
+				if (!(sideParticleList.empty()))
+				{
+					sideParticleList.pop_front();
+				}
+			}
+		}
+		
+
+	}
+	if (sideParticleList.size() > 0)
+	{
+		//DrawFormatString(10, 600, 0xffffff, "%d", sideParticleList.front()->GetTimer());
+	}
+}
+
+std::list<particle_ptr>::iterator Player::AddObjlist(particle_ptr && objPtr)
+{
+	particleList.push_back(objPtr);
+	auto itr = particleList.end();
+	itr--;
+	return itr;
 }
 

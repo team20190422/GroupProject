@@ -27,6 +27,7 @@ bool KeyMng::Update()
 	if (CheckHitKey(KEY_INPUT_LEFT)) newKey[P1_LEFT] = true;
 	if (CheckHitKey(KEY_INPUT_SPACE)) newKey[P1_SPACE] = true;
 	if (CheckHitKey(KEY_INPUT_RETURN)) newKey[P1_ENTER] = true;
+	if (CheckHitKey(KEY_INPUT_LCONTROL))newKey[P1_LCtrl] = true;
 
 
 	//p2

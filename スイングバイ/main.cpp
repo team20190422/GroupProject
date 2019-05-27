@@ -9,11 +9,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// ---------- ¹Þ°ÑÙ°Ìß
 	while (ProcessMessage() == 0 && CheckHitKey(KEY_INPUT_ESCAPE) == 0)
 	{
-		ClsDrawScreen();
-
 		GameTask::GetInstance().GameUpdate();
 
-		ScreenFlip();
 	}
 	DxLib_End();
 	return 0;
