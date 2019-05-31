@@ -1,0 +1,74 @@
+void GameTask::Transition()
+{
+	EtoP = (GetErPosY() - GetPlPosY()) / 300;
+	//if(((-GetSclPosY() / EtoP) + 700) > 350)
+	EtoPtrans = ((-GetSclPosY() / EtoP) + 700);
+
+	//DrawFormatString(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, 0xffffff, "%f", EtoP);
+	//DrawFormatString(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2 + 20, 0xffffff, "%f", EtoPtrans);
+	//DrawFormatString(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2 + 20, 0xffffff, "%f", disTrans);
+	// èÛë‘ÇÃëJà⁄
+	for (int i = 0; i < 3; i++)
+	{
+		if (GtskPtr == &GameTask::GameMain)
+		{
+			DrawLine(399 + i, 50, 399 + i, 750, GetColor(128,128,128), true);
+			// â∫ín
+			DrawLine(399 + i, 400, 399 + i, 750, GetColor(128,128,128), true);
+			// è„ìhÇË
+			DrawLine(399 + i, EtoPtrans, 399 + i, 750, GetColor(255,255,255), true);
+			DrawCircle(400, 50, 5, GetColor(128, 128, 128), true);
+			DrawCircle(400, 160, 5, GetColor(128, 128, 128), true);
+			DrawRotaGraph(400, 750, 2, 0, ImageMng::GetInstance().SetID("image/chikyu_trans.png"), true);
+			if (GetLandCheck())
+			{
+				transBright++;
+			}
+			if (clearCheck)
+			{
+				transBright--;
+				if (transBright < 128)
+				{
+					transBright = 128;
+				}
+			}
+			SetDrawBright(transBright, transBright, transBright);
+			DrawRotaGraph(400, 400, 2, 0, ImageMng::GetInstance().SetID("image/mars_trans.png"), true);
+			SetDrawBright(255, 255, 255);
+			DrawRotaGraph(400, EtoPtrans, 1.5, 0, ImageMng::GetInstance().SetID("image/player4.png"), true);
+			SetDrawBright(128, 128, 128);
+			DrawRotaGraph(400, disTrans, 1, 0, ImageMng::GetInstance().SetID("image/spCraft.png"), true);
+			//DrawString(400, 160, "parachute\nseparate", 0xffffff, true);
+			DrawStringToHandle(406, 150, "parachute", GetColor(255, 255, 255), font);
+			DrawStringToHandle(406, 160, "separate", GetColor(255, 255, 255), font);
+			SetDrawBright(255, 255, 255);
+		}
+		else if (GtskPtr == &GameTask::GameLanding && GetScene() == 2)
+		{
+			if (-GetLdistance() / 2 + 700 * 0.55 > 50)
+				disTrans = -GetLdistance() / 2 + 700 * 0.55;
+
+			DrawLine(399 + i, 50, 399 + i, 750, GetColor(128,128,128), true);
+			DrawLine(399 + i, 50, 399 + i, disTrans, GetColor(255, 255, 255), true);
+			DrawLine(399 + i, 400, 399 + i, 750, GetColor(128,128,128), true);
+			DrawCircle(400, 50, 5, GetColor(255, 255, 255), true);
+			if (disTrans >= 160)
+			{
+				colBright++;
+				if (colBright > 255)
+				{
+					colBright = 255;
+				}
+			}
+			DrawCircle(400, 160, 5, GetColor(colBright,colBright,colBright), true);
+			DrawStringToHandle(406, 150, "parachute", GetColor(colBright, colBright, colBright), font);
+			DrawStringToHandle(406, 160, "separate", GetColor(colBright, colBright, colBright), font);
+			DrawRotaGraph(400, 400, 2, 0, ImageMng::GetInstance().SetID("image/mars_trans.png"), true);
+			DrawRotaGraph(400, disTrans, 1, 0, ImageMng::GetInstance().SetID("image/spCraft.png"), true);
+			SetDrawBright(128, 128, 128);
+			DrawRotaGraph(400, 750, 2, 0, ImageMng::GetInstance().SetID("image/chikyu_trans.png"), true);
+			DrawRotaGraph(400, EtoPtrans, 1.5, 0, ImageMng::GetInstance().SetID("image/player4.png"), true);
+			SetDrawBright(255, 255, 255);
+		}
+	}
+}
