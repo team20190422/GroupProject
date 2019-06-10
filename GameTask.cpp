@@ -18,6 +18,7 @@
 //#include "Stage.h"
 #include"KeyMng.h"
 #include"ImageMng.h"
+
 //
 constexpr unsigned int SCREEN_CENTER_X = 200;
 constexpr unsigned int SCREEN_CENTER_Y = 300;
@@ -111,6 +112,18 @@ void GameTask::SetScrollPos(VECTOR3 addPos)
 {
 	ScrollPos.y = addPos.y;
 }
+
+const float & GameTask::GetRocketSize(void)
+{
+	return rocketSize;
+}
+
+const int & GameTask::GetLandingCnt(int i)
+{
+	return landingCnt[i];
+}
+
+
 const float & GameTask::GetErPosY(void)
 {
 	return EarthPos;
@@ -151,6 +164,7 @@ void GameTask::SetLdistance(float distance)
 	landDistance = distance;
 }
 
+
 const float & GameTask::GetCupSize(void)
 {
 	return cupSize;
@@ -171,14 +185,14 @@ void GameTask::SetSpr(bool separate)
 	Spr = separate;
 }
 
-const float & GameTask::GetRocketSize(void)
+const float & GameTask::GetAlpha(void)
 {
-	return rocketSize;
+	return alpha;
 }
 
-const int & GameTask::GetLandingCnt(int i)
+void GameTask::SetAlpha(float alpha)
 {
-	return landingCnt[i];
+	this->alpha = alpha;
 }
 
 const float & GameTask::GetPlPosY(void)
@@ -193,17 +207,16 @@ void GameTask::SetPlPosY(float plPos)
 
 GameTask::GameTask()
 {
-	//GtskPtr = &GameTask::SystemInit;
 	oldKey = 0;
 }
 
 GameTask::~GameTask()
 {
-	
 }
 
 void GameTask::Die(void)
 {
+
 }
 
 void GameTask::Create(void)
@@ -224,20 +237,22 @@ int GameTask::SystemInit(void)
 	}
 	SetDrawScreen(DX_SCREEN_BACK);
 
+	DieAnim = ImageMng::GetInstance().SetID("image/Explosion/Explosion.png", VECTOR2(115, 100), VECTOR2(11, 1));
+
+	OutScrAnim[0] = ImageMng::GetInstance().SetID("image/Number/count_sushiki.png", VECTOR2(50, 50), VECTOR2(10, 1));
+
 	for (int j = 0; j < 11; j++)
 	{
-		DieAnim[j] = LoadDivGraph("image/Explosion/îöî≠_ëÂ.png", 11, 11, 1, 115, 100, DieAnim, true);
-		OutScrAnim[0][j] = LoadDivGraph("image/Number/count_sushiki.png", 10, 10, 1, 50, 50, OutScrAnim[0], true);
 		if (j <= StageMax)
 		{
-			OutScrAnim[1][j] = LoadDivGraph("image/Number/StageCnt_sushiki.png", 3, 3, 1, 100, 100, OutScrAnim[1], true);
+			OutScrAnim[1] = ImageMng::GetInstance().SetID("image/Number/stageCnt_sushiki.png", VECTOR2(100, 100), VECTOR2(3, 1));
+			//OutScrAnim[1][j] = LoadDivGraph("image/Number/stageCnt_sushiki.png", 3, 3, 1, 100, 100, OutScrAnim[1], true);
 		}
-		//DieAnim[j] = LoadGraph("image/îöî≠_ëÂ.png");
 	}
-	for (int i = 0; i < EarthMax; i++)
-	{
-		EarthImage[i] = LoadDivGraph("image/earthAnimNC.png", 20, 20, 1, 100, 50, EarthImage, true);
-	}
+
+	EarthImage = ImageMng::GetInstance().SetID("image/earthAnimNC.png", VECTOR2(100, 50), VECTOR2(20, 1));
+
+
 
 	//âπäyÉtÉ@ÉCÉãì«Ç›çûÇ›
 	OP = LoadBGM("sound/Ç±ÇÃâFíàÇÃÇ«Ç±Ç©Ç≈.mp3");
@@ -253,7 +268,7 @@ int GameTask::SystemInit(void)
 	Decision = LoadSoundMem("sound/ëIëâπ.ogg");
 	Rocket = LoadSoundMem("sound/ÉçÉPÉbÉgï¨éÀ.mp3");
 	EngineM = LoadSoundMem("sound/îÚçsã@ÅEè¨å^ÉWÉFÉbÉgã@mid.mp3");
-  	EngineLand = LoadSoundMem("sound/atmosphere4.mp3");
+	EngineLand = LoadSoundMem("sound/atmosphere4.mp3");
 	Boost = LoadSoundMem("sound/ÉKÉXÉoÅ[ÉiÅ[.mp3");
 	fire = LoadSoundMem("sound/ÉKÉXÉoÅ[ÉiÅ[.mp3");
 	Emergency = LoadSoundMem("sound/åxïÒ.ogg");
@@ -276,6 +291,7 @@ int GameTask::GameInit(void)
 	//
 	auto reset = [&] {
 		time = 0;
+		MainTimer = 0;
 		AnimCnt = 0;
 		clearCnt = 0;
 		limitAnimSize = 2.0f;
@@ -283,16 +299,21 @@ int GameTask::GameInit(void)
 		subTitleCnt = 0;
 		subTitleAnim = 0;
 		outScreenTime = 0;
+		resultAnimCnt = 200;
+		resultTime = 0;
+		overBright = 255.0f;
 		EtoP = 0.0f;
 		EtoPtrans = ((-533 / 5) + 700);
 		disTrans = 50.0f;
 		shake = 0.0f;
+		shakeWidth = 5;
 		kouka_shake = 5;
 		koukaSave = 0;
 		koukaSize = 0.3f;
 		alphaJ = 0.0f;
 		alphaM = 0.0f;
 		font = CreateFontToHandle(NULL, 10, 1);
+
 		clearCheck = false;
 		landingCheck = false;
 		landingFlag = false;
@@ -303,15 +324,27 @@ int GameTask::GameInit(void)
 		fireFlag = false;
 		hundredFlag = false;
 		OutScr = false;
+		SetAlpha(0.0f);
 	};
 	//
 
 	objList.clear();
 	bpList.clear();
+	bpList.reserve(stageSet[StageCnt].size() * 2);
+
+	tSetPos.clear();
 
 	//
 	reset();
 	//
+
+
+	/*for (auto i : targetSet)
+	{
+		i += VECTOR3(1, 0);
+
+	}*/
+	DrawString(0, 0, "INIT", 0xffff00);
 
 	player = AddObjlist(std::make_shared<Player>(lpKeyMng.trgKey,lpKeyMng.oldKey));
 	obstracle = AddObjlist(std::make_shared<Obstracle>());
@@ -321,6 +354,7 @@ int GameTask::GameInit(void)
 	int AsteroidCnt = 0;
 	for (auto planet : stageSet[StageCnt])
 	{
+		auto max = stageSet[StageCnt].size();
 		AsteroidCnt++;
 		asteroid = AddBplist(std::make_shared<Asteroid>(planet, AsteroidCnt));
 	}
@@ -334,10 +368,19 @@ int GameTask::GameInit(void)
 		}
 	}
 
-	(*player)->init("image/Player2.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
+	for (auto itr : bpList)
+	{
+		tSetPos.push_back(itr->GetPos());
+	}
+
+	if (UFOFlag == true) {
+		(*player)->init("image/UFO.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
+	}
+	else {
+		(*player)->init("image/Player.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 1.0f);
+	}
 	(*obstracle)->init("image/meteo.png", VECTOR2(64 / 2, 32 / 1), VECTOR2(2, 1), VECTOR2(1, 0), 0.5f);
 
-	//ImageMng::GetInstance().SetID("TITLE", "image/É^ÉCÉgÉã.png");
 	back = new BackGround();
 
 	GtskPtr = &GameTask::GameMain;
@@ -358,8 +401,6 @@ int GameTask::GameTitle(void)
 
 	ClsDrawScreen();
 
-	titleTime++;
-	int shakeEarth = GetRand(titleShake);
 
 	if (titleBright < 255)
 	{
@@ -370,6 +411,8 @@ int GameTask::GameTitle(void)
 
 	StageCnt = 0;
 	MarsCnt = 0;
+	pauseFlag = false;
+	pauseCheck = false;
 
 	//ÉTÉEÉìÉhä÷åW
 	ChangeVolumeSoundMem(255 * 70 / 100, OP);//OPÇÃâπÇÃÉ{ÉäÉÖÅ[ÉÄÇ70%Ç…ê›íË
@@ -383,32 +426,33 @@ int GameTask::GameTitle(void)
 	DrawGraph(0, 0, ImageMng::GetInstance().SetID("image/landBG.png"), true);
 	//if ((lgtsCnt++ / 30) % 2 == 0)
 	{
-		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y, 1, angle += 0.005f, ImageMng::GetInstance().SetID("image/LGTS.png"), true);
+		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y, 1, angle+=0.005f, ImageMng::GetInstance().SetID("image/LGTS.png"), true);
 	}
-	DrawGraph(0, 0, ImageMng::GetInstance().SetID("image/title.png"), true);
-	DrawRotaGraphF(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y - 100, earthSize, 0, EarthImage[(earthAnimCnt++ / 15) % 19], true);
 
 	// ¿≤ƒŸâÊñ 
 	DrawGraph(0, 0, ImageMng::GetInstance().SetID("image/title.png"), true);
-	DrawRotaGraphF(SCREEN_SIZE_X / 2, (SCREEN_SIZE_Y - 100) + shakeEarth, earthSize, 0, EarthImage[(earthAnimCnt++ / 15) % 19], true);
+	DrawRotaGraphF(SCREEN_SIZE_X / 2, (SCREEN_SIZE_Y - 100), earthSize, 0, EarthImage[(earthAnimCnt++ / 15) % 19], true);
 
 	if (KeyMng::GetInstance().newKey[P1_LCtrl]) {
 		UFOFlag = true;
 	}
 	if (UFOFlag == true) {
 		int ufo_x = 25, ufo_y = 200;
-		DrawGraph(ufo_x, ufo_y, IMAGE_ID("image/UFOå∞åª.png"), true);
+		DrawGraph(ufo_x, ufo_y, IMAGE_ID("image/UFOèoåª.png"), true);
 	}
 	//ÉQÅ[ÉÄÉÇÅ[Éhà⁄çs
 	if (KeyMng::GetInstance().trgKey[P1_SPACE])
 	{
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		/*if (CheckSoundMem(OP) == 0)*/PlaySoundMem(Rocket, DX_PLAYTYPE_BACK);
-		titleShake = 5;
-		//pushSpace = true;
+		PlaySoundMem(Rocket, DX_PLAYTYPE_BACK);
+		shakeFlag = true;
 		launchFlag = true;
-	}
 
+	}
+	if (shakeFlag)
+	{
+		DrawRotaGraphF(SCREEN_SIZE_X / 2, (SCREEN_SIZE_Y - 100) + Shake(), earthSize, 0, EarthImage[(earthAnimCnt++ / 15) % 19], true);
+	}
 	// Ã™∞ƒﬁ
 	if (launchFlag)
 	{
@@ -422,22 +466,30 @@ int GameTask::GameTitle(void)
 	}
 
 	// êUìÆ
-	if (titleShake > 0)
+	if (shakeFlag)
 	{
-		if (titleTime % 30 == 0)
+		titleTime++;
+		if (titleTime % 100 == 0)
 		{
-			titleShake--;
+			pushSpace = true;
 		}
-	}
-
-	if (titleShake == 1)
-	{
-		titleShake = 0;
-		pushSpace = true;
 	}
 
 	if (pushSpace)
 	{
+		DrawFormatString(SCREEN_SIZE_X - 150, SCREEN_SIZE_Y - 15, 0xffffff, "SPACEÇ≈ÉXÉLÉbÉv");
+
+		shakeWidth = 5;
+
+		timeCnt++;
+		// º∞›Ω∑ØÃﬂ
+		if (timeCnt > 1)
+		{
+			if (KeyMng::GetInstance().trgKey[P1_SPACE])
+			{
+				skipFlag = true;
+			}
+		}
 		if (!UFOFlag)
 		{
 			//  ﬂ∞√®∏ŸçÏê¨
@@ -474,37 +526,12 @@ int GameTask::GameTitle(void)
 		}
 		else
 		{
-			UFOpos.x += 5;
-			if (!ufoYflag)
-			{
-				UFOpos.y--;
-			}
-			else
-			{
-				UFOpos.y++;
-			}
-			if (UFOpos.y <= 440 && !ufoYflag)
-			{
-				ufoYflag = true;
-			}
-			else if (UFOpos.y >= 450 && ufoYflag)
-			{
-				ufoYflag = false;
-			}
-			// ufoï`âÊ
-			DrawRotaGraph(UFOpos.x, UFOpos.y, 0.3, 0, ImageMng::GetInstance().SetID("image/ufo(side).png"), true);
-		}
+			ufoTime++;
+			UFOpos.x += 2;
 
-		timeCnt++;
-		// º∞›Ω∑ØÃﬂ
-		if (timeCnt > 1)
-		{
-			if (KeyMng::GetInstance().trgKey[P1_SPACE])
-			{
-				skipFlag = true;
-			}
+			// ufoï`âÊ
+			DrawRotaGraph(UFOpos.x, UFOpos.y - sin(3.1415 * 2 / 100 * ufoTime) * 30, 0.3, 0, ImageMng::GetInstance().SetID("image/ufo(side).png"), true);
 		}
-		DrawRotaGraph(rocketPos.x, rocketPos.y, rocketSize, 0, ImageMng::GetInstance().SetID("image/rocket.png"), true);
 		rocketPos.y -= 3.0f;
 		if (rocketSize >= 2.0f)
 		{
@@ -524,25 +551,16 @@ int GameTask::GameTitle(void)
 			else
 			{
 				lightFlag = true;
+
 				if (CheckSoundMem(OP) == 1) StopSoundMem(OP);//TitleÇ™çƒê∂íÜÇ»ÇÁTitleÇé~ÇﬂÇÈ
 
+				skipFlag = false;
+				timeCnt = 0;
 				GtskPtr = &GameTask::GameInit;
 			}
-			/*if (lightFlag)
-			{
-			if (landingCnt[0] < 255)
-			{
-			landingCnt[0] += 5;
-			}
-			else
-			{
-			GtskPtr = &GameTask::GameInit;
-			}
-			}*/
 		}
 		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 	}
-	//DrawString(0, 0, "GAME_TITLE", 0xffffff);
 	ScreenFlip();
 	return 0;
 }
@@ -554,12 +572,14 @@ int GameTask::GameMain(void)
 
 	ClsDrawScreen();
 
+	///////////////////////////////////////////////////////////////////////////////////
 	// Œﬂ∞Ωﬁóp
 	if (KeyMng::GetInstance().trgKey[P1_PAUSE] && !GetHitCheck())
 	{
 		if (pauseFlag)
 		{
 			pauseFlag = false;
+			pauseCheck = false;
 		}
 		else
 		{
@@ -568,7 +588,7 @@ int GameTask::GameMain(void)
 		}
 	}
 
-	//DrawFormatString(10, 600, 0xffffff, "flag %d", pauseFlag);
+	//DrawFormatString(10, 600, 0xffffff, "time %d", MainTimer);
 
 	if (!pauseFlag)
 	{
@@ -577,22 +597,82 @@ int GameTask::GameMain(void)
 	}
 	else
 	{
+		// Œﬂ∞ΩﬁéûÇÃèàóù
+		if (KeyMng::GetInstance().trgKey[P1_UP])
+		{
+			if (pauseCheck)
+			{
+				pauseCheck = false;
+			}
+		}
+		else if (KeyMng::GetInstance().trgKey[P1_DOWN])
+		{
+			if (!pauseCheck)
+			{
+				pauseCheck = true;
+			}
+		}
 		if (255 - pauseBrightTime > 100)
 		{
 			pauseBrightTime += 5;
 		}
 		SetDrawBright(255 - pauseBrightTime, 255 - pauseBrightTime, 255 - pauseBrightTime);
-	}
 
-	//DrawFormatString(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, 0xffffff, "%d", lpGameTask.clearCheck);
-	//DrawFormatString(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, 0xffffff, "%d", lpGameTask.StageCnt);
+		// ÿƒ◊≤or¿≤ƒŸ
+		if (KeyMng::GetInstance().trgKey[P1_SPACE] && pauseCheck)
+		{
+			time = 0;
+			AnimCnt = 0;
+			AnimTime = 0;
+			clearCnt = 0;
+			clearCheck = false;
+			landingCheck = false;
+			landingFlag = false;
+			returnFlag = false;
+			getSample = false;
+			UFOFlag = false;
+			PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
+			if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
+															// îwåiÇÃçÌèú
+			std::vector<BackGround*>::iterator itrBG = backVec.begin();
+
+			titleBright = 0;
+			if (shakeWidth > 0)
+				shakeWidth = 0;
+			rocketSize = 0.0f;
+			rocketPos = { SCREEN_SIZE_X / 2,SCREEN_SIZE_Y - 150 };
+			lightFlag = false;
+			pushSpace = false;
+			UFOFlag = false;
+
+			GtskPtr = &GameTask::GameTitle;
+		}
+		if (KeyMng::GetInstance().trgKey[P1_SPACE] && !pauseCheck)
+		{
+			AnimCnt = 0;
+			AnimTime = 0;
+			retryCnt++;
+			MarsCnt--;
+			time = 0;
+			AnimCnt = 0;
+			clearCnt = 0;
+			clearCheck = false;
+			landingCheck = false;
+			landingFlag = false;
+			returnFlag = false;
+			getSample = false;
+			retryCheck = true;
+			if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
+		}
+	}
+	///////////////////////////////////////////////////////////////////////////////////////////////
 
 	ChangeVolumeSoundMem(255 * 50 / 100, Main);//OPÇÃâπÇÃÉ{ÉäÉÖÅ[ÉÄÇ70%Ç…ê›íË
 	if (CheckSoundMem(Main) == 0)PlaySoundMem(Main, DX_PLAYTYPE_LOOP);//MainÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 
 																	  //ÉTÉEÉìÉhä÷åW
-	if (KeyMng::GetInstance().newKey[P1_UP]) {//Å™ÉLÅ[Ç™âüÇ≥ÇÍÇΩÇ∆Ç´
-		if (UFOFlag == true) 
+	if (KeyMng::GetInstance().newKey[P1_UP] && !pauseFlag) {//Å™ÉLÅ[Ç™âüÇ≥ÇÍÇΩÇ∆Ç´
+		if (UFOFlag == true)
 		{
 			if (CheckSoundMem(UFO) == 0)PlaySoundMem(UFO, DX_PLAYTYPE_LOOP);//UFOÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 		}
@@ -613,7 +693,7 @@ int GameTask::GameMain(void)
 		{
 			soundVol++;
 		}
-		//ChangeVolumeSoundMem(255 * soundV.Engine - soundVol / 100, EngineF);
+		//ChangeVolumeSoundMem(255 * soundV.Engine - soundVol / 100, Engine);
 	}
 	if (KeyMng::GetInstance().newKey[P1_RIGHT] || KeyMng::GetInstance().newKey[P1_LEFT])
 	{
@@ -629,7 +709,7 @@ int GameTask::GameMain(void)
 			if (CheckSoundMem(Gas) == 0)PlaySoundMem(Gas, DX_PLAYTYPE_LOOP);//UFOÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 		}
 	}
-	else 
+	else
 	{	//ÇªÇ§Ç≈Ç»ÇØÇÍÇŒâπÇé~ÇﬂÇÈ
 		StopSoundMem(UFO);//UFOâπÇé~ÇﬂÇÈ
 		StopSoundMem(Rocket);//RocketâπÇé~ÇﬂÇÈ
@@ -641,7 +721,7 @@ int GameTask::GameMain(void)
 		//ChangeVolumeSoundMem(255 * soundV.Engine - soundVol / 100, EngineF);
 	}
 
-	if (KeyMng::GetInstance().oldKey[P1_UP])
+	if (KeyMng::GetInstance().oldKey[P1_UP] && !pauseFlag)
 	{
 		soundV.Engine--;
 	}
@@ -649,29 +729,15 @@ int GameTask::GameMain(void)
 	{
 		soundV.Engine = 100;
 	}
+	SetCurrentPositionSoundMem(44100, Boost);
 
-	SetCurrentPositionSoundMem(44100,Boost);
-	if (KeyMng::GetInstance().trgKey[P1_SPACE]) {
-	//	if (CheckSoundMem(Boost) == 0)PlaySoundMem(Boost, DX_PLAYTYPE_BACK);//BoostÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
-	//	psFlag = true;
-	//}
-	//else {
-	//	if (sBoostCnt >= 50)
-	//	{
-	//		sBoostCnt = 0;
-	//		StopSoundMem(Boost);//BoostâπÇé~ÇﬂÇÈ
-	//	}
-	//}
-
-	//if (psFlag)
-	//{
-	//	sBoostCnt++;
-	//	if (sBoostCnt > 50)
-	//	{
-	//		psFlag = false;
-	//		sBoostCnt = 50;
-	//	}
+	if (KeyMng::GetInstance().newKey[P1_SPACE]) {
+		if (CheckSoundMem(Boost) == 0)PlaySoundMem(Boost, DX_PLAYTYPE_BACK);//BoostÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 	}
+	else {
+		StopSoundMem(Boost);//BoostâπÇé~ÇﬂÇÈ
+	}
+
 
 	// Ç±Ç±Ç©ÇÁ
 	auto StageDraw = [&] {
@@ -692,23 +758,22 @@ int GameTask::GameMain(void)
 					subTitleFlag = true;
 				}
 			}
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, subTitleCnt);
 
-			//DrawFormatString(SCREEN_CENTER_X - SCREEN_SIZE_X / 4, SCREEN_CENTER_Y, GetColor(subTitleCnt, subTitleCnt, subTitleCnt), "STAGE");
-			SetDrawBright(subTitleCnt, subTitleCnt, subTitleCnt);
-			DrawRotaGraph(SCREEN_CENTER_X, SCREEN_CENTER_Y + 25, 1.3, 0, IMAGE_ID("image/stage_kana.png"), true);
+			DrawRotaGraph(SCREEN_CENTER_X, SCREEN_CENTER_Y + 25, 1.3, 0, IMAGE_ID("image/Number/stage_kana.png"), true);
 			DrawRotaGraph(SCREEN_CENTER_X + SCREEN_SIZE_X / 4, SCREEN_CENTER_Y + 25, 0.7, 0, OutScrAnim[1][StageCnt], true);
-			SetDrawBright(255, 255, 255);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
 		}
 		else
 		{
 			if (subTitleCnt > 0)
 			{
 				subTitleCnt -= 5;
-				//DrawFormatString(SCREEN_CENTER_X - SCREEN_SIZE_X / 4, SCREEN_CENTER_Y, GetColor(subTitleCnt, subTitleCnt, subTitleCnt), "STAGE");
-				SetDrawBright(subTitleCnt, subTitleCnt, subTitleCnt);
-				DrawRotaGraph(SCREEN_CENTER_X, SCREEN_CENTER_Y + 25, 1.3, 0, IMAGE_ID("image/stage_kana.png"), true);
+				SetDrawBlendMode(DX_BLENDMODE_ALPHA, subTitleCnt);
+				DrawRotaGraph(SCREEN_CENTER_X, SCREEN_CENTER_Y + 25, 1.3, 0, IMAGE_ID("image/Number/stage_kana.png"), true);
 				DrawRotaGraph(SCREEN_CENTER_X + SCREEN_SIZE_X / 4, SCREEN_CENTER_Y + 25, 0.7, 0, OutScrAnim[1][StageCnt], true);
-				SetDrawBright(255, 255, 255);
+				SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 			}
 			else
 			{
@@ -736,6 +801,7 @@ int GameTask::GameMain(void)
 				return true;
 			}
 		}
+		
 		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 
 		return false;
@@ -786,11 +852,11 @@ int GameTask::GameMain(void)
 	}
 
 	distance = { DISTANCE_MAX };
+	
 	if (!pauseFlag)
 	{
 		time++;
 	}
-
 	for (auto itr : bpList)
 	{
 
@@ -829,7 +895,6 @@ int GameTask::GameMain(void)
 
 	for (auto itr : objList)
 	{
-		//(*player)->GetPos();
 		playerPos = (*player)->GetPos();
 		playerAngle = (*player)->GetAngle();
 		playerVec = (*player)->GetVec();
@@ -839,6 +904,7 @@ int GameTask::GameMain(void)
 		if (!GetHitCheck() && !pauseFlag)
 		{
 			itr->Update();
+
 		}
 		else
 		{
@@ -848,7 +914,10 @@ int GameTask::GameMain(void)
 				{
 					AnimCnt++;
 				}
-				DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
+				if (AnimCnt <= 10)
+				{
+					DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
+				}
 				StopSoundMem(UFO);		//UFOâπÇé~ÇﬂÇÈ
 				StopSoundMem(Rocket);	//RocketâπÇé~ÇﬂÇÈ
 				StopSoundMem(Boost);	//BoostâπÇé~ÇﬂÇÈ
@@ -860,12 +929,12 @@ int GameTask::GameMain(void)
 				}
 			}
 		}
-
+		
 		if (landingCheck && landingFlag)
 		{
 			SetHitCheck(false);
 
-
+			
 		}
 	}
 	// îwåiÇÃçÌèú
@@ -904,7 +973,10 @@ int GameTask::GameMain(void)
 		{
 			AnimCnt++;
 		}
-		DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
+		if (AnimCnt <= 10)
+		{
+			DrawRotaGraph((int)playerPos.x, (int)playerPos.y, 1.0, 0, DieAnim[AnimCnt], true);
+		}
 		if (CheckSoundMem(Bom) == 0)PlaySoundMem(Bom, DX_PLAYTYPE_BACK);//BomÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 		if (AnimCnt >= 11)
 		{
@@ -915,7 +987,7 @@ int GameTask::GameMain(void)
 		StopSoundMem(Bom);	//BomâπÇé~ÇﬂÇÈ
 	}
 
-	// Ç±Ç±Ç‹Ç≈
+	// –∆œØÃﬂÇÃï`âÊ
 	Transition();
 
 
@@ -928,13 +1000,16 @@ int GameTask::GameMain(void)
 		}
 		else
 		{
-
+			setScrPos = false;
 			if (landingCheck && landingFlag && !clearCheck)
 			{
 				// íÖó§Ç…à⁄çs
+				setScrPos = true;
+				setplPos = (*player)->GetplPos();
+				
 				GtskPtr = &GameTask::GameLandInit;
 			}
-
+			
 		}
 
 		if (landingCnt[0] <= 100)
@@ -996,13 +1071,14 @@ int GameTask::GameMain(void)
 
 		if (landingCnt[1] > 0 && (outScreenTime++ % 60) == 0)
 		{
-			landingCnt[1] -= 10;
+			landingCnt[1] -= 20;
 			limitTime--;
 			if (limitTime <= 0)
 			{
 				limitTime = 0;
 			}
-		/*	if (CheckSoundMem(Emergency2) == 0)PlaySoundMem(Emergency2, DX_PLAYTYPE_BACK);*/
+			//if (CheckSoundMem(Emergency2) == 0)PlaySoundMem(Emergency2, DX_PLAYTYPE_BACK);
+
 		}
 		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 	}
@@ -1018,7 +1094,6 @@ int GameTask::GameMain(void)
 		{
 			landingCnt[1] += 10;
 			SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
-		/*	if (CheckSoundMem(Emergency2) == 1)StopSoundMem(Emergency2);*/
 			if (CheckSoundMem(noise) == 1)StopSoundMem(noise);
 			soundV.noise = 50;
 		}
@@ -1055,9 +1130,9 @@ int GameTask::GameMain(void)
 		{
 			if (landingCnt[1] > 0)
 			{
-				landingCnt[1] -= 5;
+				landingCnt[1] -= 10;
 			}
-			else if (landingCnt[1] <= 5)
+			else if(landingCnt[1] <= 5)
 			{
 				ClsDrawScreen();
 				OutScr = true;
@@ -1069,7 +1144,7 @@ int GameTask::GameMain(void)
 		}
 	}
 	// Ç±Ç±Ç‹Ç≈
-
+	
 
 	if (clearCheck)
 	{
@@ -1087,33 +1162,42 @@ int GameTask::GameMain(void)
 		{
 			SetHitCheck(false);
 		}
-		else
-		{
-			//clearCnt = 0;
-		}
+		
 	}
 
 	// Ç±Ç±Ç©ÇÁ
 	if (OutOfScreen && !pauseFlag)
 	{
-		//SetFontSize(limitAnimSize--);
+
 		limitAnimSize -= 0.033f;
 		if (limitTime <= 0)
 			SetDrawBright(255, 255, 255);
-		//DrawFormatString(SCREEN_CENTER_X, SCREEN_CENTER_Y, GetColor(255, 255, 255), "%d", limitTime);
-		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, limitAnimSize, 0, OutScrAnim[0][limitTime], true);
+		if (limitTime >= 1)
+		{
+			DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, limitAnimSize, 0, OutScrAnim[0][limitTime], true);
+		}
 		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 		SetFontSize(20);		// Ã´›ƒÇÃª≤Ωﬁ
-		if(cdCount++ % 4 == 0)
-		landingCnt[1]--;
-		if (landingCnt[1] < 65 && limitTime == 0)
+		if (limitTime <= 0)
 		{
-			ClsDrawScreen();
-			StopSoundMem(noise);
-			GtskPtr = &GameTask::GameOver;
-			GameOverTime = 0;
-		}
+			if (landingCnt[1] > 0)
+			{
+				landingCnt[1] -= 10;
+			}
+			else
+			{
+
+				//if (GameOverTime++ > 60)
+				{
+					ClsDrawScreen();
+					StopSoundMem(noise);
+					GtskPtr = &GameTask::GameOver;
+					GameOverTime = 0;
+				}
+			}
+
 			SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+		}
 	}
 
 	if (limitAnimSize <= 0)
@@ -1121,7 +1205,7 @@ int GameTask::GameMain(void)
 		limitAnimSize = 2.0f;
 	}
 
-
+	
 
 	// Ω√∞ºﬁ∂≥›ƒ
 	if (!getSample && !pauseFlag)
@@ -1129,23 +1213,50 @@ int GameTask::GameMain(void)
 		StageDraw();
 
 	}
+
+	/////////////////////////////////////////////////////////////////////////
+	// Œﬂ∞ΩﬁéûÇÃï`âÊ
 	if (pauseFlag)
 	{
-		SetDrawBright(255, 255, 255);
-		DrawString(100, 200, "PAUSE", 0xffffff, true);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, pauseBrightTime * 2);
+
+		SetDrawBright(100 + pauseBrightTime, 100 + pauseBrightTime,100 + pauseBrightTime);
+		DrawRotaGraph(SCREEN_CENTER_X + 25, 200, 1.5, 0, IMAGE_ID("image/pause/pause.png"), true);
+
+		if (pauseCheck)
+		{
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 425, 1.0, 0, IMAGE_ID("image/pause/titleback.png"), true);
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 425, 0.8, 0, IMAGE_ID("image/pause/ëIë.png"), true);
+			SetDrawBright(255 - pauseBrightTime, 255 - pauseBrightTime, 255 - pauseBrightTime);
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 325, 1.0, 0, IMAGE_ID("image/pause/retry.png"), true);
+		}
+		else
+		{
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 325, 1.0, 0, IMAGE_ID("image/pause/retry.png"), true);
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 325, 0.8, 0, IMAGE_ID("image/pause/ëIë.png"), true);
+			SetDrawBright(255 - pauseBrightTime, 255 - pauseBrightTime, 255 - pauseBrightTime);
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 425, 1.0, 0, IMAGE_ID("image/pause/titleback.png"), true);
+		}
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		//DrawString(100, 200, "PAUSE", 0xffffff, true);
 	}
 
-
-	DrawFormatStringF(10, 500, GetColor(255, 255, 255), "playerPosX %f playerPosY %f", playerPos.x, playerPos.y);
-	DrawFormatStringF(10, 550, GetColor(255, 255, 255), "targetVecX %f targetVecY %f", targetVec.x, targetVec.y);
-	DrawFormatStringF(10, 600, GetColor(255, 255, 255), "time %d", MainTimer);
-
+	if (retryCheck)
+	{
+		retryCheck = false;
+		pauseFlag = false;
+		GtskPtr = &GameTask::GameInit;
+	}
 
 	if (clearCheck)
 	{
 		StopSoundMem(wind);
 	}
+	//////////////////////////////////////////////////////////////////////////////////////////
 
+	//DrawFormatString(10, 650, 0xffffff, "retryCnt %d", retryCnt);
+	// Ç±Ç±Ç‹Ç≈
 	ScreenFlip();
 
 	return 0;
@@ -1165,10 +1276,9 @@ int GameTask::GameLandInit(void)
 
 int GameTask::GameLanding(void)
 {
-	StopSoundMem(Emergency);//EmergencyâπÇé~ÇﬂÇÈ
+ 	StopSoundMem(Emergency);//EmergencyâπÇé~ÇﬂÇÈ
 
 	ClsDrawScreen();
-
 	if (GetScene() == 0 && GetCupSize() < 1.9f)
 	{
 		ChangeVolumeSoundMem(255 * soundV.fire / 100, fire);
@@ -1208,8 +1318,7 @@ int GameTask::GameLanding(void)
 		PlaySoundMem(wind, DX_PLAYTYPE_LOOP);
 		soundCnt++;
 	}
-	//if(GetScene() == 2 && )
-	
+
 	if (GetLandCheck())
 	{
 		if (landingCnt[0] < 255)
@@ -1259,16 +1368,17 @@ int GameTask::GameLanding(void)
 		(*landPlayer)->Draw();
 		(*landPlayer)->Update();
 	}
+	Transition();
+
 
 	SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 
 	int a = GetLandCheck();
 	int b = GetCupLandCheck();
 	int c = darkFlag;
-	//DrawString(0, 0, "GameLanding", 0xffffff);
-	DrawFormatString(0, 80, 0xffffff, "%d", a);
+	/*DrawFormatString(0, 80, 0xffffff, "%d", a);
 	DrawFormatString(0, 95, 0xffffff, "%d", b);
-	DrawFormatString(0, 110, 0xffffff, "%d", c);
+	DrawFormatString(0, 110, 0xffffff, "%d", c);*/
 
 	if (GetSpr())
 	{
@@ -1296,9 +1406,10 @@ int GameTask::GameLanding(void)
 	// èåèíBê¨ÇµÇΩÇÁâFíàÇ÷ñﬂÇÈ
 	if (landAnimFlag)
 	{
-		pltrgPos = VECTOR3(playerPos.x + targetVec.x * 2, playerPos.y);
+		pltrgPos = VECTOR3(playerPos.x + targetVec.x, playerPos.y);
 		(*player)->SetPos(pltrgPos);
-		SetScrollPos(targetVec);
+		SetScrollPos(-targetVec);
+		pltrgVec = targetVec;
 		setCount = true;
 		landingCheck = false;
 		landAnimFlag = false;
@@ -1310,7 +1421,10 @@ int GameTask::GameLanding(void)
 		lightFlag = false;
 		cupLandingCheck = false;			// ∂ÃﬂæŸÇÃsizeÇ™0Ç…Ç»Ç¡ÇΩÇ©Ã◊∏ﬁ
 		checkCnt = 0;
-		pltrgPos = { 0,0 };
+		//pltrgPos = { 0,0 };
+		//landingCnt[0] = 0;
+		landingCnt[1] = 0;
+		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
 		if (objList.size() > 0)
 		{
 			objList.pop_back();
@@ -1318,8 +1432,14 @@ int GameTask::GameLanding(void)
 		GtskPtr = &GameTask::GameMain;
 	}
 
-	Transition();
-	DrawFormatString(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, 0xffffff, "%f", GetCupSize());
+	// îöî≠ÇµÇΩÇÁπﬁ∞—µ∞ ﬁ∞
+	if (landGameCheck)
+	{
+		ClsDrawScreen();
+		landingCnt[0] = 0;
+		GtskPtr = &GameTask::GameOver;
+	}
+
 	ScreenFlip();
 	return 0;
 }
@@ -1329,11 +1449,11 @@ int GameTask::GameResult(void)
 	auto Evaluation = [&] {
 
 		// ¿≤—ï]âø
-		if (MainTimer <= 200)
+		if (MainTimer <= 1200)
 		{
 			timeEval = 3;
 		}
-		else if(MainTimer <= 400)
+		else if (MainTimer <= 1800)
 		{
 			timeEval = 2;
 		}
@@ -1356,7 +1476,10 @@ int GameTask::GameResult(void)
 			fuelEval = 1;
 		}
 
+		
 		// écã@ï]âø
+		lifeEval = ((retryCnt == 0) ? 3 : (retryCnt == 1) ? 2 : (retryCnt == 2) ? 1 : 0);
+
 
 		// ëççá
 		all = timeEval + fuelEval + lifeEval;
@@ -1375,9 +1498,29 @@ int GameTask::GameResult(void)
 		}
 	};
 
+	auto ResultReset = [&] {
+		//Line
+		line.count1 = 0;
+		line.count2 = 0;
+		line.count3 = 0;
+		line.L = 20.0f;
+		line.R1 = 20.0f;
+		line.R2 = 20.0f;
+		line.R3 = 20.0f;
+		line.end = false;
+
+		// rankSize
+		rankSize.time = 0.0f;
+		rankSize.sample = 0.0f;
+		rankSize.life = 0.0f;
+		rankSize.all = 0.0f;
+		rankSize.incEnd = false;
+		rankSize.count = 0;
+		rankSize.countSave = 0;
+	};
+
 	ClsDrawScreen();
 	int imageX = 0, imageY = 0;
-
 	// âÊëúÇÃª≤ΩﬁéÊìæ
 	GetGraphSize(ImageMng::GetInstance().SetID("image/Result/ê√é‚2.png"), &imageX, &imageY);
 	if (resultAnimCnt > 0)
@@ -1396,25 +1539,41 @@ int GameTask::GameResult(void)
 	{
 		landingCnt[0] += 20;
 	}
-	SetDrawBright(110,110,110);
+	SetDrawBright(50, 50, 50);
 	DrawGraph(0, 0, resultAnim, true);
-	SetDrawBright(255, 255, 255);
 
 
 	SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
 
-	//////////////////////////////////////////////
+
+
 	if (!getSample)
 	{
 		DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)) + resultAnimCnt, SCREEN_SIZE_Y - imageY / 2 + 50, 1.0, 0, ImageMng::GetInstance().SetID("image/Result/ê√é‚2.png"), true);
+		DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)), SCREEN_SIZE_Y - imageY / 2 + 50, 1.0, 0, ImageMng::GetInstance().SetID("image/Result/òg.png"), true);
 	}
 	else
 	{
-		DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)), SCREEN_SIZE_Y - imageY / 2 + 50, 1.0, 0, ImageMng::GetInstance().SetID("image/Result/òg2.png"), true);
-		DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)) + resultAnimCnt, SCREEN_SIZE_Y - imageY / 2 + 50, 1.0, 0, ImageMng::GetInstance().SetID("image/Result/äΩäÏ2.png"), true);
+		if (rankSize.all >= 1.5)
+		{
+			if (rankSize.bigSize > 0)
+			{
+				rankSize.bigSize -= 0.1f;
+			}
+			DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)), SCREEN_SIZE_Y - imageY / 2 + 50, 1.0 + rankSize.bigSize, 0, ImageMng::GetInstance().SetID("image/Result/òg2.png"), true);
+			DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)) + resultAnimCnt, SCREEN_SIZE_Y - imageY / 2 + 50, 1.0 + rankSize.bigSize, 0, ImageMng::GetInstance().SetID("image/Result/äΩäÏ2.png"), true);
+			DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)), SCREEN_SIZE_Y - imageY / 2 + 50, 1.0 + rankSize.bigSize, 0, ImageMng::GetInstance().SetID("image/Result/òg.png"), true);
+
+		}
+		else
+		{
+			DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)) + resultAnimCnt, SCREEN_SIZE_Y - imageY / 2 + 50, 1.0, 0, ImageMng::GetInstance().SetID("image/Result/ê√é‚2.png"), true);
+			DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)), SCREEN_SIZE_Y - imageY / 2 + 50, 1.0, 0, ImageMng::GetInstance().SetID("image/Result/òg.png"), true);
+
+		}
 	}
-	DrawRotaGraph((SCREEN_SIZE_X - (imageX / 2)), SCREEN_SIZE_Y - imageY / 2 + 50, 1.0, 0, ImageMng::GetInstance().SetID("image/Result/òg.png"), true);
-	/////////////////////////////////////////////////
+
+
 
 	// ï]âø
 	Evaluation();
@@ -1429,13 +1588,6 @@ int GameTask::GameResult(void)
 	SetFontSize(50);		// Ã´›ƒÇÃª≤Ωﬁ
 	SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
 	ChangeFont("Ailerons");
-	//DrawString(SCREEN_SIZE_X / 2 - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "RESULT", 0xffffff);
-	//DrawFormatStringF(10, 450, GetColor(255, 255, 255), "time   %d %c", MainTimer, timeEval);
-	//DrawFormatStringF(10, 500, GetColor(255, 255, 255), "sample %d %c", getSample, sampleEval);//Evaluation
-	//DrawFormatStringF(10, 600, GetColor(255, 255, 255), "Evaluation %d", getSample);
-	//SetFontSize(20);		// Ã´›ƒÇÃª≤Ωﬁ
-	//SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
-	//ChangeFont("MSÉSÉVÉbÉN");
 
 	// ∂≈ver
 	DrawRotaGraph(SCREEN_SIZE_X / 2, 50, 1.5, 0, ImageMng::GetInstance().SetID("image/result_kana.png"), true);
@@ -1445,10 +1597,6 @@ int GameTask::GameResult(void)
 	DrawRotaGraph(100, SCREEN_SIZE_Y / 2, 1, 0, ImageMng::GetInstance().SetID("image/rank_kana.png"), true);
 
 
-	// ±ŸÃßÕﬁØƒver
-	//DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, 1.5, 0, ImageMng::GetInstance().SetID("image/result_eng.png"), true);
-	//DrawRotaGraph(100, 500, 1, 0, ImageMng::GetInstance().SetID("image/time_eng.png"), true);
-	//DrawRotaGraph(100, 600, 1, 0, ImageMng::GetInstance().SetID("image/sample_eng.png"), true);
 
 	// ï]âø
 	rankSize.count++;
@@ -1463,6 +1611,7 @@ int GameTask::GameResult(void)
 		{
 			if (rankSize.countSave == 0)
 			{
+				playResultFlag = true;
 				rankSize.countSave = rankSize.count;
 				PlaySoundMem(Result_rank, DX_PLAYTYPE_BACK);
 			}
@@ -1498,6 +1647,7 @@ int GameTask::GameResult(void)
 			}
 			else
 			{
+				playResultFlag = true;
 				PlaySoundMem(Result_rank, DX_PLAYTYPE_BACK);
 			}
 		}
@@ -1510,6 +1660,7 @@ int GameTask::GameResult(void)
 			}
 			else
 			{
+				playResultFlag = true;
 				rankSize.incEnd = true;
 				PlaySoundMem(Result_rank, DX_PLAYTYPE_BACK);
 			}
@@ -1525,117 +1676,118 @@ int GameTask::GameResult(void)
 				ChangeVolumeSoundMem(255 * 80 / 100, Result_rankAll);
 				PlaySoundMem(Result_rankAll, DX_PLAYTYPE_BACK);
 				PlaySoundMem(Cheers, DX_PLAYTYPE_BACK);
+				playResultFlag = true;
 				rankSize.incEnd = false;
 			}
 		}
+
+		if (CheckSoundMem(Result_rank) == 0)
+		{
+			playResultFlag = false;
+		}
+
+		if (playResultFlag)
+		{
+			shake = Shake();
+		}
+		else
+		{
+			shake = 0;
+		}
 	}
+
 	if (timeEval == 3)
 	{
-		DrawRotaGraph(400, 125, rankSize.time, 0, ImageMng::GetInstance().SetID("image/rank_A.png"), true);
+		DrawRotaGraph(400 + shake, 125 + shake, rankSize.time, 0, ImageMng::GetInstance().SetID("image/rank_A.png"), true);
 	}
-	else if(timeEval == 2)
+	else if (timeEval == 2)
 	{
-		DrawRotaGraph(400, 125, rankSize.time, 0, ImageMng::GetInstance().SetID("image/rank_B.png"), true);
+		DrawRotaGraph(400 + shake, 125 + shake, rankSize.time, 0, ImageMng::GetInstance().SetID("image/rank_B.png"), true);
 	}
 	else
 	{
-		DrawRotaGraph(400, 125, rankSize.time, 0, ImageMng::GetInstance().SetID("image/rank_C.png"), true);
+		DrawRotaGraph(400 + shake, 125 + shake, rankSize.time, 0, ImageMng::GetInstance().SetID("image/rank_C.png"), true);
 	}
 
 	if (fuelEval == 3)
 	{
-		DrawRotaGraph(400, 200, rankSize.sample, 0, ImageMng::GetInstance().SetID("image/rank_A.png"), true);
+		DrawRotaGraph(400 + shake, 200 + shake, rankSize.sample, 0, ImageMng::GetInstance().SetID("image/rank_A.png"), true);
 	}
-	else if(fuelEval == 2)
+	else if (fuelEval == 2)
 	{
-		DrawRotaGraph(400, 200, rankSize.sample, 0, ImageMng::GetInstance().SetID("image/rank_B.png"), true);
+		DrawRotaGraph(400 + shake, 200 + shake, rankSize.sample, 0, ImageMng::GetInstance().SetID("image/rank_B.png"), true);
 	}
 	else
 	{
-		DrawRotaGraph(400, 200, rankSize.sample, 0, ImageMng::GetInstance().SetID("image/rank_C.png"), true);
+		DrawRotaGraph(400 + shake, 200 + shake, rankSize.sample, 0, ImageMng::GetInstance().SetID("image/rank_C.png"), true);
 	}
 
 	if (lifeEval == 3)
 	{
-		DrawRotaGraph(400, 275, rankSize.life, 0, ImageMng::GetInstance().SetID("image/rank_A.png"), true);
+		DrawRotaGraph(400 + shake, 275 + shake, rankSize.life, 0, ImageMng::GetInstance().SetID("image/rank_A.png"), true);
 	}
 	else if (lifeEval == 2)
 	{
-		DrawRotaGraph(400, 275, rankSize.life, 0, ImageMng::GetInstance().SetID("image/rank_B.png"), true);
+		DrawRotaGraph(400 + shake, 275 + shake, rankSize.life, 0, ImageMng::GetInstance().SetID("image/rank_B.png"), true);
 	}
 	else
 	{
-		DrawRotaGraph(400, 275, rankSize.life, 0, ImageMng::GetInstance().SetID("image/rank_C.png"), true);
+		DrawRotaGraph(400 + shake, 275 + shake, rankSize.life, 0, ImageMng::GetInstance().SetID("image/rank_C.png"), true);
 	}
 
 	if (all == 9 || all == 8)
 	{
-		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, rankSize.all, 0, ImageMng::GetInstance().SetID("image/rank_A.png"), true);
+		DrawRotaGraph(SCREEN_SIZE_X / 2 + shake, SCREEN_SIZE_Y / 2 + shake, rankSize.all, 0, ImageMng::GetInstance().SetID("image/rank_A.png"), true);
 		if (all == 9)
 		{
-			DrawRotaGraph(SCREEN_SIZE_X / 2 + 50, SCREEN_SIZE_Y / 2, rankSize.all, 0, ImageMng::GetInstance().SetID("image/+.png"), true);
+			DrawRotaGraph(SCREEN_SIZE_X / 2 + 50 + shake, SCREEN_SIZE_Y / 2 + shake, rankSize.all, 0, ImageMng::GetInstance().SetID("image/+.png"), true);
 		}
 	}
 	else if (all == 7 || all == 6)
 	{
-		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, rankSize.all, 0, ImageMng::GetInstance().SetID("image/rank_B.png"), true);
+		DrawRotaGraph(SCREEN_SIZE_X / 2 + shake, SCREEN_SIZE_Y / 2 + shake, rankSize.all, 0, ImageMng::GetInstance().SetID("image/rank_B.png"), true);
 		if (all == 7)
 		{
-			DrawRotaGraph(SCREEN_SIZE_X / 2 + 50, SCREEN_SIZE_Y / 2, rankSize.all, 0, ImageMng::GetInstance().SetID("image/+.png"), true);
+			DrawRotaGraph(SCREEN_SIZE_X / 2 + 50 + shake, SCREEN_SIZE_Y / 2 + shake, rankSize.all, 0, ImageMng::GetInstance().SetID("image/+.png"), true);
 		}
 	}
 	else if (all == 5 || all == 4)
 	{
-		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, rankSize.all, 0, ImageMng::GetInstance().SetID("image/rank_C.png"), true);
+		DrawRotaGraph(SCREEN_SIZE_X / 2 + shake, SCREEN_SIZE_Y / 2 + shake, rankSize.all, 0, ImageMng::GetInstance().SetID("image/rank_C.png"), true);
 		if (all == 5)
 		{
-			DrawRotaGraph(SCREEN_SIZE_X / 2 + 50, SCREEN_SIZE_Y / 2, rankSize.all, 0, ImageMng::GetInstance().SetID("image/+.png"), true);
+			DrawRotaGraph(SCREEN_SIZE_X / 2 + 50 + shake, SCREEN_SIZE_Y / 2 + shake, rankSize.all, 0, ImageMng::GetInstance().SetID("image/+.png"), true);
 		}
 	}
 	else
 	{
-		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, rankSize.all, 0, ImageMng::GetInstance().SetID("image/rank_D.png"), true);
+		DrawRotaGraph(SCREEN_SIZE_X / 2 + shake, SCREEN_SIZE_Y / 2 + shake, rankSize.all, 0, ImageMng::GetInstance().SetID("image/rank_D.png"), true);
 	}
-	
 
 	static int count = 0;
 	int Clear_X = 0, Clear_Y = 680;
-
 	if (StageCnt == 0) {
 		if (CheckSoundMem(ED1) == 0)PlaySoundMem(ED1, DX_PLAYTYPE_LOOP);//ResultÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 		count = (count + 1) % 100;
-		if (count < 50) {
-			//DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Result/Stage1Clear.png"), true);
-		}
+		
 	}
 	else if (StageCnt == 1) {
 		if (CheckSoundMem(ED2) == 0)PlaySoundMem(ED2, DX_PLAYTYPE_LOOP);//ResultÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 		count = (count + 1) % 100;
-		if (count < 50) {
-			//DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Result/Stage2Clear.png"), true);
-		}
+		
 	}
 	else if (StageCnt == 2) {
 		ChangeVolumeSoundMem(255 * 70 / 100, LED);//LEDÇÃâπÇÃÉ{ÉäÉÖÅ[ÉÄÇ70%Ç…ê›íË
 		if (CheckSoundMem(LED) == 0)PlaySoundMem(LED, DX_PLAYTYPE_LOOP);//ResultÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 		count = (count + 1) % 100;
-		if (count < 50) {
-			//DrawGraph(Clear_X, Clear_Y, IMAGE_ID("image/Result/Stage3Clear.png"), true);
-		}
+		
 	}
-
 
 	if (KeyMng::GetInstance().trgKey[P1_SPACE])
 	{
-		/*time = 0;
-		AnimCnt = 0;
-		clearCnt = 0;
-		clearCheck = false;
-		landingCheck = false;
-		landingFlag = false;
-		returnFlag = false;
-		getSample = false;*/
+		
 		StageCnt++;
+		ResultReset();
 		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
 
 		if (CheckSoundMem(ED1) == 1)StopSoundMem(ED1);	// ED1Ç™çƒê∂íÜÇ»ÇÁEd1ÇÃâπÇé~ÇﬂÇÈ
@@ -1656,18 +1808,16 @@ int GameTask::GameResult(void)
 
 			GtskPtr = &GameTask::GameClear;
 		}
-		//DrawFormatStringF(10, 500, GetColor(255, 255, 255), "íÖó§ %d flag %d return %d clear %d sample %d", landingCheck, landingFlag, returnFlag, clearCheck, getSample);
-		//DrawFormatStringF(10, 550, GetColor(255, 255, 255), "time %d", MainTimer);
-		//DrawFormatStringF(10, 600, GetColor(255, 255, 255), "MaxTime %d", MaxTime);
 	}
+	
 	ScreenFlip();
 
 	return 0;
-
 }
 
 int GameTask::GameOver(void)
 {
+	ClsDrawScreen();
 	//ÉTÉEÉìÉh
 	if (CheckSoundMem(Rocket) == 1)StopSoundMem(Rocket);// RocketÇ™çƒê∂íÜÇ»ÇÁRocketÇÃâπÇé~ÇﬂÇÈ
 	if (CheckSoundMem(Bom) == 1)StopSoundMem(Bom);// BomÇ™çƒê∂íÜÇ»ÇÁBomÇÃâπÇé~ÇﬂÇÈ
@@ -1676,76 +1826,208 @@ int GameTask::GameOver(void)
 	if (CheckSoundMem(Emergency2) == 1)StopSoundMem(Emergency2);
 	if (CheckSoundMem(Over) == 0)PlaySoundMem(Over, DX_PLAYTYPE_LOOP);//OverÇ™çƒê∂íÜÇ≈Ç»ÇØÇÍÇŒâπÇñ¬ÇÁÇ∑
 
-	if (KeyMng::GetInstance().trgKey[P1_ENTER])
+
+	//ÉtÉFÅ[ÉhÉAÉEÉg	
+	if (GameOverFlag)
 	{
-		time = 0;
-		AnimCnt = 0;
-		clearCnt = 0;
-		clearCheck = false;
-		landingCheck = false;
-		landingFlag = false;
-		returnFlag = false;
-		getSample = false;
-		UFOFlag = false;
-		PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
-		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
-														// îwåiÇÃçÌèú
-		std::vector<BackGround*>::iterator itrBG = backVec.begin();
-		while (itrBG != backVec.end())
+		if (landingCnt[0] >= 255 && landingCnt[1] >= 255)
 		{
-			delete(*itrBG);
-			itrBG = backVec.erase(itrBG);
-			BackGraundCnt--;
+			if (overBright >= 70) {
+				overBright -= 0.35f;
+			}
+			else
+			{
+				DrawGameOver = true;
+			}
+			SetDrawBright(overBright, overBright, overBright);
+		}
+		DrawGraph(0, 0, ImageMng::GetInstance().SetID("image/landBG.png"), true);
+	}
+	//âÊñ äOÇ…èoÇƒÉQÅ[ÉÄÉIÅ[ÉoÅ[Ç…Ç»Ç¡ÇΩéû
+	if (OutOfScreen) {
+		DrawGameOver = true;
+		//ÉmÉCÉYÇÃï`âÊ
+		for (int x = 0; x < SCREEN_SIZE_X; x++)
+		{
+			for (int y = 0; y < SCREEN_SIZE_Y; y++)
+			{
+				auto randomY = GetRand(10000);
+
+				DrawPixel(x, y + randomY, GetColor(255, 255, 255));
+			}
+		}
+		if (playerVec.y < 0)
+		{
+			paint_y++;//ï`âÊÇ∑ÇÈÇ∆Ç´ÇÃÇ∏ÇÁÇ∑íl
+		}
+		else if (playerVec.y > 0) {
+			paint_y--;//ï`âÊÇ∑ÇÈÇ∆Ç´ÇÃÇ∏ÇÁÇ∑íl
+		}
+		if (playerVec.x > 0) {
+			paint_x++;//ï`âÊÇ∑ÇÈÇ∆Ç´ÇÃÇ∏ÇÁÇ∑íl
+		}
+		else if (playerVec.x < 0) {
+			paint_x--;//ï`âÊÇ∑ÇÈÇ∆Ç´ÇÃÇ∏ÇÁÇ∑íl
+		}
+	}
+	else 
+	{	//ÇªÇÍà»äOÇÃéû(îRóøêÿÇÍ)
+		if (GameOverFlag)
+		{
+			paint_x = 0;//ï`âÊÇ∑ÇÈÇ∆Ç´ÇÃÇ∏ÇÁÇ∑íl
+			paint_y--;	//ï`âÊÇ∑ÇÈÇ∆Ç´ÇÃÇ∏ÇÁÇ∑íl
+		}
+	}
+	//é©ã@ÇÃï`âÊ
+
+
+	if (UFOFlag == true) {	//é©ã@Ç™ufoÇÃéû
+		DrawRotaGraph(Ppos_x + paint_x, Ppos_y - paint_y, 1.0, playerAngle, ImageMng::GetInstance().SetID("image/ufo.png"), true);
+	}
+	else {
+		//é©ã@í èÌéû(ÉçÉPÉbÉg)
+		DrawRotaGraph(Ppos_x + paint_x, Ppos_y - paint_y, 1.0, playerAngle, ImageMng::GetInstance().SetID("image/player.png"), true);
+	}
+
+	// ÿƒ◊≤or¿≤ƒŸÇëIë
+	if (DrawGameOver)
+	{
+		GameOverCnt = false;
+		if (KeyMng::GetInstance().trgKey[P1_UP])
+		{
+			if (pauseCheck)
+			{
+				pauseCheck = false;
+			}
+		}
+		else if (KeyMng::GetInstance().trgKey[P1_DOWN])
+		{
+			if (!pauseCheck)
+			{
+				pauseCheck = true;
+			}
 		}
 
+		// ÿƒ◊≤or¿≤ƒŸ
+		if (KeyMng::GetInstance().trgKey[P1_SPACE] && pauseCheck)
+		{
+			time = 0;
+			AnimCnt = 0;
+			AnimTime = 0;
+			clearCnt = 0;
+			clearCheck = false;
+			landingCheck = false;
+			landingFlag = false;
+			returnFlag = false;
+			getSample = false;
+			UFOFlag = false;
+			PlaySoundMem(Decision, DX_PLAYTYPE_BACK);
+			if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
+															// îwåiÇÃçÌèú
+			std::vector<BackGround*>::iterator itrBG = backVec.begin();
 
-		GtskPtr = &GameTask::GameTitle;
+			titleBright = 0;
+			if (shakeWidth > 0)
+				shakeWidth = 0;
+			rocketSize = 0.0f;
+			rocketPos = { SCREEN_SIZE_X / 2,SCREEN_SIZE_Y - 150 };
+			lightFlag = false;
+			pushSpace = false;
+			UFOFlag = false;
+			GameOverFlag = false;
+			DrawGameOver = false;
+			OutScr = false;
+			overBright = 255;
+
+			GtskPtr = &GameTask::GameTitle;
+		}
+		if (KeyMng::GetInstance().trgKey[P1_SPACE] && !landGameCheck && !pauseCheck)
+		{
+			AnimCnt = 0;
+			AnimTime = 0;
+			paint_y = 0;
+			retryCnt++;
+			(*obstracle)->SetPos(VECTOR3((float)SCREEN_SIZE_X / 2, (float)SCREEN_SIZE_Y));
+			GameOverFlag = false;
+			DrawGameOver = false;
+			OutScr = false;
+			overBright = 255;
+			if (!getSample)
+			{
+				MarsCnt--;
+				time = 0;
+				AnimCnt = 0;
+				clearCnt = 0;
+				clearCheck = false;
+				landingCheck = false;
+				landingFlag = false;
+				returnFlag = false;
+				getSample = false;
+				GtskPtr = &GameTask::GameInit;
+			}
+			else
+			{
+				auto setCnt = 0;
+				auto itrPos = VECTOR3(0, 0);
+				for (auto itr : bpList)
+				{
+					itrPos = itr->GetPos();
+					itr->SetPos(VECTOR3(tSetPos[setCnt].x, tSetPos[setCnt].y + (pltrgPos.y - targetSet[StageCnt].y)));
+					setCnt++;
+				}
+				(*player)->SetPos(VECTOR3(pltrgScr.x*1.2f, playerPos.y));
+				(*player)->SetVec(VECTOR3(0, 0.1f));
+				(*player)->SetEnergy(100.0f);
+				(*player)->SetplPos(VECTOR3(setplPos.x, setplPos.y));
+				SetScrollPos(-targetVec);
+
+
+				setCount = true;
+				landingCheck = false;
+				landAnimFlag = false;
+				landingFlag = true;
+				clearCheck = true;						// ∏ÿ±â¬î\èÛë‘Ç…Ç∑ÇÈ
+				hitCheck = false;
+				clearCnt = 0;
+				GtskPtr = &GameTask::GameMain;
+			}
+			if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
+
+
+		}
+
+		// ¡™Ø∏Œﬂ≤›ƒìûíBéû
+		if (KeyMng::GetInstance().trgKey[P1_SPACE] && landGameCheck && !pauseCheck)
+		{
+			landGameCheck = false;
+			OutScr = false;
+			retryCnt++;
+
+			if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
+
+			GtskPtr = &GameTask::GameLanding;
+		}
 	}
-	if (KeyMng::GetInstance().trgKey[P1_SPACE])
-	{
-		MarsCnt--;
-		time = 0;
-		AnimCnt = 0;
-		clearCnt = 0;
-		clearCheck = false;
-		landingCheck = false;
-		landingFlag = false;
-		returnFlag = false;
-		getSample = false;
-		if (CheckSoundMem(Over) == 1)StopSoundMem(Over);// OverÇ™çƒê∂íÜÇ»ÇÁOverÇÃâπÇé~ÇﬂÇÈ
 
-		GtskPtr = &GameTask::GameInit;
+
+	//è¨òfêØorË¶êŒÇ…ìñÇΩÇ¡ÇƒÉQÅ[ÉÄÉIÅ[ÉoÅ[ÇÃéû
+	//if (bomFlag == true) {
+	if (hitCheck == true && !OutScr) {
+		GameOverFlag = true;
+		DrawGameOver = true;
+		if (AnimCnt >= 11) {
+			AnimCnt = 0;
+		}
+		if (AnimTime++ % 10 == 0)
+		{
+			AnimCnt++;
+		}
+		if (AnimCnt <= 10)
+		{
+			DrawGraph(Bpos_x, Bpos_y - paint_y, DieAnim[AnimCnt], true);	//îöî≠ÉGÉtÉFÉNÉgï`âÊ
+		}
 	}
-
-	if (landingCnt[0] < 255)
-	{
-		landingCnt[0] += 5;
-	}
-	if (landingCnt[1] < 255)
-	{
-		landingCnt[1] += 5;
-	}
-
-	if (landingCnt[0] < landingCnt[1])
-	{
-		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
-	}
-	else
-	{
-		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
-	}
-
-
-	SetFontSize(50);		// Ã´›ƒÇÃª≤Ωﬁ
-	SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
-	ChangeFont("Ailerons");
-	DrawString(SCREEN_CENTER_X - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "GAME OVER", 0xffffff);
-	SetFontSize(20);		// Ã´›ƒÇÃª≤Ωﬁ
-	SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
-	ChangeFont("MSÉSÉVÉbÉN");
-
-	DrawFormatStringF(10, 500, GetColor(255, 255, 255), "íÖó§ %d flag %d return %d clear %d sample %d", landingCheck, landingFlag, returnFlag, clearCheck, getSample);
-	
+	//}
 	if (OutScr)
 	{
 		if (alphaJ > 128)
@@ -1770,6 +2052,22 @@ int GameTask::GameOver(void)
 		{
 			shake = 0;
 		}
+		if (shake == 0)
+		{
+			GameOverCnt++;
+		}
+		if (GameOverCnt > 60)
+		{
+			GameOverFlag = true;
+		}
+		if (!DrawGameOver && KeyMng::GetInstance().trgKey[P1_SPACE] && GtskPtr != &GameTask::GameInit && GtskPtr != &GameTask::GameMain && GtskPtr != &GameTask::GameTitle && GtskPtr != &GameTask::GameLanding)
+		{
+			shake = 0;
+			GameOverFlag = true;
+			StopSoundMem(koukaon);
+			overBright = 70;
+			DrawGameOver = true;
+		}
 		DrawGraph(-250 + shake, -100 + shake, ImageMng::GetInstance().SetID("image/shuchusen2.png"), true);
 		alphaJ += 1.3f;
 		DrawRotaGraph(SCREEN_SIZE_X / 2 + shake, 265 / 2 + shake, koukaSize, 0, ImageMng::GetInstance().SetID("image/koukaon.png"), true);
@@ -1779,8 +2077,54 @@ int GameTask::GameOver(void)
 		DrawGraph(70 + shake / 2, (SCREEN_SIZE_Y - 75 * 3.0f) + shake / 2, ImageMng::GetInstance().SetID("image/ka-zuEnd_moji.png"), true);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, alphaM);
 	}
-	
 
+	if (landingCnt[0] < 255)
+	{
+		landingCnt[0] += 5;
+	}
+	if (landingCnt[1] < 255)
+	{
+		landingCnt[1] += 5;
+	}
+
+	if (landingCnt[0] < landingCnt[1])
+	{
+		SetDrawBright(landingCnt[0], landingCnt[0], landingCnt[0]);
+	}
+	else
+	{
+		SetDrawBright(landingCnt[1], landingCnt[1], landingCnt[1]);
+	}
+
+
+	//DrawString(0, 0, "GameResult", 0xffffff);
+
+	if (DrawGameOver)
+	{
+		SetFontSize(50);		// Ã´›ƒÇÃª≤Ωﬁ
+		SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
+		ChangeFont("Ailerons");
+		DrawRotaGraph(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2 - 50, 1.0, 0, IMAGE_ID("image/pause/gameover.png"), true);
+		if (pauseCheck)
+		{
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 625, 1.0, 0, IMAGE_ID("image/pause/titleback.png"), true);
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 625, 0.8, 0, IMAGE_ID("image/pause/ëIë.png"), true);
+			SetDrawBright(100, 100, 100);
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 525, 1.0, 0, IMAGE_ID("image/pause/retry.png"), true);
+		}
+		else
+		{
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 525, 1.0, 0, IMAGE_ID("image/pause/retry.png"), true);
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 525, 0.8, 0, IMAGE_ID("image/pause/ëIë.png"), true);
+			SetDrawBright(100, 100, 100);
+			DrawRotaGraph(SCREEN_CENTER_X - 75, 625, 1.0, 0, IMAGE_ID("image/pause/titleback.png"), true);
+		}
+		//DrawString(SCREEN_CENTER_X - SCREEN_SIZE_X / 4, SCREEN_SIZE_Y / 2, "GAME OVER", 0xffffff);
+		SetFontSize(20);		// Ã´›ƒÇÃª≤Ωﬁ
+		SetFontThickness(8);	// Ã´›ƒÇÃëæÇ≥
+		ChangeFont("MSÉSÉVÉbÉN");
+	}
+	
 	ScreenFlip();
 
 	return 0;
@@ -1851,10 +2195,10 @@ int GameTask::GameClear(void)
 		}
 	}
 
-	DrawString(0, 0, "GameClear", 0xffffff);
-	
+	//DrawString(0, 0, "GameClear", 0xffffff);
 
-	DrawFormatStringF(10, 600, GetColor(255, 255, 255), "MaxTime %d", MaxTime);
+
+	//DrawFormatStringF(10, 600, GetColor(255, 255, 255), "MaxTime %d", MaxTime);
 
 	ScreenFlip();
 
@@ -1870,16 +2214,13 @@ void GameTask::Transition()
 	//DrawFormatString(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2, 0xffffff, "%f", EtoP);
 	//DrawFormatString(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2 + 20, 0xffffff, "%f", EtoPtrans);
 	//DrawFormatString(SCREEN_SIZE_X / 2, SCREEN_SIZE_Y / 2 + 20, 0xffffff, "%f", disTrans);
-	// èÛë‘ÇÃëJà⁄
 	for (int i = 0; i < 3; i++)
 	{
 		if (GtskPtr == &GameTask::GameMain)
 		{
-			DrawLine(399 + i, 50, 399 + i, 750, GetColor(128,128,128), true);
-			// â∫ín
-			DrawLine(399 + i, 400, 399 + i, 750, GetColor(128,128,128), true);
-			// è„ìhÇË
-			DrawLine(399 + i, EtoPtrans, 399 + i, 750, GetColor(255,255,255), true);
+			DrawLine(399 + i, 50, 399 + i, 750, GetColor(128, 128, 128), true);
+			DrawLine(399 + i, 400, 399 + i, 750, GetColor(128, 128, 128), true);
+			DrawLine(399 + i, EtoPtrans, 399 + i, 750, GetColor(255, 255, 255), true);
 			DrawCircle(400, 50, 5, GetColor(128, 128, 128), true);
 			DrawCircle(400, 160, 5, GetColor(128, 128, 128), true);
 			DrawRotaGraph(400, 750, 2, 0, ImageMng::GetInstance().SetID("image/chikyu_trans.png"), true);
@@ -1909,11 +2250,14 @@ void GameTask::Transition()
 		else if (GtskPtr == &GameTask::GameLanding && GetScene() == 2)
 		{
 			if (-GetLdistance() / 2 + 700 * 0.55 > 50)
+			{
 				disTrans = -GetLdistance() / 2 + 700 * 0.55;
+			}
 
-			DrawLine(399 + i, 50, 399 + i, 750, GetColor(128,128,128), true);
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, GetAlpha());
+			DrawLine(399 + i, 50, 399 + i, 750, GetColor(128, 128, 128), true);
 			DrawLine(399 + i, 50, 399 + i, disTrans, GetColor(255, 255, 255), true);
-			DrawLine(399 + i, 400, 399 + i, 750, GetColor(128,128,128), true);
+			DrawLine(399 + i, 400, 399 + i, 750, GetColor(128, 128, 128), true);
 			DrawCircle(400, 50, 5, GetColor(255, 255, 255), true);
 			if (disTrans >= 160)
 			{
@@ -1923,7 +2267,7 @@ void GameTask::Transition()
 					colBright = 255;
 				}
 			}
-			DrawCircle(400, 160, 5, GetColor(colBright,colBright,colBright), true);
+			DrawCircle(400, 160, 5, GetColor(colBright, colBright, colBright), true);
 			DrawStringToHandle(406, 150, "parachute", GetColor(colBright, colBright, colBright), font);
 			DrawStringToHandle(406, 160, "separate", GetColor(colBright, colBright, colBright), font);
 			DrawRotaGraph(400, 400, 2, 0, ImageMng::GetInstance().SetID("image/mars_trans.png"), true);
@@ -1932,7 +2276,21 @@ void GameTask::Transition()
 			DrawRotaGraph(400, 750, 2, 0, ImageMng::GetInstance().SetID("image/chikyu_trans.png"), true);
 			DrawRotaGraph(400, EtoPtrans, 1.5, 0, ImageMng::GetInstance().SetID("image/player4.png"), true);
 			SetDrawBright(255, 255, 255);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, GetAlpha());
 		}
+	}
+}
+
+int GameTask::Shake()
+{
+	shake = GetRand(shakeWidth);
+	if (pushSpace && GtskPtr == &GameTask::GameTitle)
+	{
+		return 0;
+	}
+	else
+	{
+		return shake;
 	}
 }
 
@@ -1944,7 +2302,7 @@ std::list<obj_ptr>::iterator GameTask::AddObjlist(obj_ptr && objPtr)
 	return itr;
 }
 
-std::list<bp_ptr>::iterator GameTask::AddBplist(bp_ptr && bpPtr)
+std::vector<bp_ptr>::iterator GameTask::AddBplist(bp_ptr && bpPtr)
 {
 	bpList.push_back(bpPtr);
 	auto itr = bpList.end();

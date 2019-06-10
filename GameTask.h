@@ -4,8 +4,9 @@
 #include<list>
 #include<map>
 #include "Obj.h"
-#include "BasePlanet.h"
+//#include "BasePlanet.h"
 
+class BasePlanet;
 //class Player;
 //class Stage;
 //class Enemy;
@@ -24,7 +25,7 @@ typedef std::shared_ptr<Obj> obj_ptr;
 typedef std::list<obj_ptr> obj_List;
 
 typedef std::shared_ptr<BasePlanet> bp_ptr;
-typedef std::list<bp_ptr> bp_List;
+typedef std::vector<bp_ptr> bp_List;
 
 typedef std::shared_ptr<Obj> title_ptr;
 typedef std::list<title_ptr> title_List;
@@ -64,8 +65,6 @@ public:
 	bool HitCheck(RECT rect1, RECT rect2);
 	int count = 0;
 
-	int StageCnt = 0;
-
 	const bool& GetHitCheck(void);
 	void SetHitCheck(bool hitCheck);
 
@@ -83,6 +82,7 @@ public:
 
 	const VECTOR3& GetScrollPos(void);
 	void SetScrollPos(VECTOR3 addPos);
+
 
 	const float& GetPlPosY(void);
 	void SetPlPosY(float plPos);
@@ -104,6 +104,9 @@ public:
 
 	const bool& GetSpr(void);
 	void SetSpr(bool separate);
+
+	const float& GetAlpha(void);
+	void SetAlpha(float alpha);
 
 	const float& GetRocketSize(void);
 
@@ -141,14 +144,15 @@ public:
 	bool clearCheck = false;				// 惑星の着陸に成功したﾌﾗｸﾞ
 
 	bool darkFlag = false;					// 暗転ﾌﾗｸﾞ
-
-	bool landGameCheck = false;
-	bool landAnimFlag = false;
+	bool landGameCheck = false;				// 着陸時のﾁｪｯｸﾎﾟｲﾝﾄ
+	bool landAnimFlag = false;				// 着陸成功判定
 	bool setScrPos = false;
+	int StageCnt = 0;
+
 private:
 
 	std::list<obj_ptr>::iterator AddObjlist(obj_ptr && objPtr);
-	std::list<bp_ptr>::iterator AddBplist(bp_ptr && bpPtr);
+	std::vector<bp_ptr>::iterator AddBplist(bp_ptr && bpPtr);
 
 	int GameInit(void);
 	int GameTitle(void);
@@ -158,8 +162,9 @@ private:
 	int GameResult(void);
 	int GameOver(void);
 	int GameClear(void);
-
 	void Transition();
+	int Shake();
+
 
 	int (GameTask::*GtskPtr)(void);
 
@@ -171,9 +176,9 @@ private:
 
 	// bpListに格納
 	bp_List bpList;
-	std::list<bp_ptr>::iterator earth;
-	std::list<bp_ptr>::iterator mars;
-	std::list<bp_ptr>::iterator asteroid;
+	std::vector<bp_ptr>::iterator earth;
+	std::vector<bp_ptr>::iterator mars;
+	std::vector<bp_ptr>::iterator asteroid;
 
 	title_List particleList;
 	std::list<title_ptr>::iterator particle;
@@ -184,17 +189,21 @@ private:
 	int Energy = { 0 };
 	int time = 0;
 
-	int DieAnim[12] = { 0 };
-	int OutScrAnim[2][11] = { 0 };
+	std::vector<int> DieAnim;
+	std::vector<int> OutScrAnim[2];
+	std::vector<int> EarthImage;
+
 	int AnimCnt = 0;
 	int AnimTime = 0;
 	int checkCnt = 0;
 	int clearCnt = 0;				// 着陸成功時の無敵時間
 	int MarsCnt = 0;
 	int earthAnimCnt = 0;
-	int EarthImage[20] = { 0 };
 	int lgtsCnt = 0;
 	int timeCnt = 0;
+	int retryCnt = 0;				// 残機用のｶｳﾝﾄ ｹﾞｰﾑｵｰﾊﾞｰ時に加算
+	int shakeWidth = 5;
+
 	VECTOR3 pos = { 0,0 };
 
 	// ｻﾌﾞﾀｲﾄﾙ
@@ -220,20 +229,26 @@ private:
 	bool hundredFlag = false;
 	bool OutScr = false;
 	bool Spr = false;
+	bool GameOverFlag = false;
+	bool DrawGameOver = false;
+	bool shakeFlag = false;
+	bool playResultFlag = false;
 
 	//音楽関係
 	int OP, Main, ED1, ED2, LED, Over;	//BGM
-	int Decision, Cancel, Rocket, Bom, Boost, Emergency, Emergency2, EngineM, EngineLand,Result_rank, Result_rankAll,Cheers,wind,noise,fire,koukaon,Gas,ClearBGM;
+	int Decision, Cancel, Rocket, Bom, Boost, Emergency, Emergency2, EngineM, EngineLand, Result_rank, Result_rankAll, Cheers, wind, noise, fire, koukaon, Gas, ClearBGM;
 	//隠しコマンド関係
 	int UFO;
 	bool UFOFlag = false;
 	bool ufoYflag = false;
 	VECTOR3 UFOpos = { 0,450 };
-
+	int ufoTime = 0;
+	int GameOverCnt = 0;
 	// ここから
-	int limitTime = 4;
+	int limitTime = 6;
 	int cdCount = 0;
 	int soundVol = 0;
+
 	float limitAnimSize = 2.0f;
 	float earthSize = 5.0f;
 	float rocketSize = 0.0f;
@@ -252,6 +267,8 @@ private:
 	float koukaSave;
 	float slideE = 0.0f;
 	float slideP = 0.0;
+	float alpha = 0.0f;
+
 
 	struct {
 		float OP = 70;
@@ -259,6 +276,7 @@ private:
 		float Engine = 100;
 		float noise = 50;
 		float fire = 0;
+
 	}soundV;
 
 	struct {
@@ -266,6 +284,7 @@ private:
 		float sample = 0.0f;
 		float life = 0.0f;
 		float all = 0.0f;
+		float bigSize = 1.5f;
 		bool incEnd = false;
 		int count = 0;
 		int countSave = 0;
@@ -289,12 +308,18 @@ private:
 	VECTOR3 rocketPos = { SCREEN_SIZE_X / 2,SCREEN_SIZE_Y - 150 };
 
 
-	int titleBright = 0;
-	int titleTime = 0;
-	int titleShake = 0;
+	//ゲームオーバー時に使う変数
+	float overBright;				//オーバー画面時の画面の明るさ
+	int paint_x = 0, paint_y = 0;	//描画するときのずらず値
+	int Ppos_x = 210, Ppos_y = 220;	//自機の座標
+	int Bpos_x = 150, Bpos_y = 170;	//爆発表示の座標
 
 	int MainTimer = 0;
 	int MaxTime = 0;
+
+	int titleBright = 0;
+	int titleTime = 0;
+	int titleShake = 0;
 
 	int resultAnim = 0;
 	int resultTime = 0;
@@ -302,11 +327,12 @@ private:
 
 	bool pauseFlag = false;					// ﾎﾟｰｽﾞ用ﾌﾗｸﾞ
 	int pauseBrightTime = 0;
+	bool pauseCheck = false;				// ﾎﾟｰｽﾞ時の処理
+	bool retryCheck = false;				// ﾎﾟｰｽﾞ時にﾘﾄﾗｲが押された時の判定
 
 	int Scene = 0;
 	int transBright = 128;
 	int colBright = 128;
-
 	int font = 0;
 
 	int soundCnt = 0;
@@ -318,10 +344,12 @@ private:
 	int shake = 0;
 
 
+
 	// 全体的な評価
 	int all = 0;	// 0:初期値 9:A+ 8:A 7:B+ 6:B 5:C+ 4:C 
 	int stageRank1 = 0, stageRank2 = 0, stageRank3 = 0;
 	int sogo = 0;
 	int timeEval = 0, sampleEval = 0, CompEval = 0, fuelEval = 0, lifeEval = 0;		// 0:初期値 3:A 2:B 1:C
 	int BackGraundCnt = 0;
+
 };
