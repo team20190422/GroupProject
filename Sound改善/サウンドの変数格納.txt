@@ -1,0 +1,69 @@
+SysInitにある
+
+	OP = LoadSoundMem("sound/この宇宙のどこかで.ogg");
+	Main = LoadSoundMem("sound/星粒が降る夜.mp3");
+	ED1 = LoadSoundMem("sound/遊星.ogg");
+	ED2 = LoadSoundMem("sound/farewell.ogg");
+	LED = LoadSoundMem("sound/世界が僕達に揺れるまで.ogg");
+	Over = LoadSoundMem("sound/宇宙空間.ogg");
+	Result_rank = LoadSoundMem("sound/bomb.mp3");
+	Result_rankAll = LoadSoundMem("sound/destruction1.mp3");
+	Cheers = LoadSoundMem("sound/people_people-stadium-cheer1.mp3");
+	Clap = LoadSoundMem("sound/people_people-stadium-applause1.mp3");
+	Booing = LoadSoundMem("sound/booing.wav");
+	Start = LoadSoundMem("sound/button81.mp3");
+	Decision= LoadSoundMem("sound/button83.mp3");
+	Choose = LoadSoundMem("sound/pon.mp3");
+	Pause = LoadSoundMem("sound/enter16.mp3");
+	PauseBack = LoadSoundMem("sound/cancel7.mp3");
+	Rocket = LoadSoundMem("sound/ロケット噴射.mp3");
+	EngineM = LoadSoundMem("sound/飛行機・小型ジェット機mid.mp3");
+	EngineLand = LoadSoundMem("sound/atmosphere4.mp3");
+	Boost = LoadSoundMem("sound/バックブースター.ogg");
+	fire = LoadSoundMem("sound/ガスバーナー.mp3");
+	Emergency = LoadSoundMem("sound/警報.ogg");
+	Emergency2 = LoadSoundMem("sound/警報03.ogg");
+	Bom = LoadSoundMem("sound/explosion3.ogg");
+	UFO = LoadSoundMem("sound/UFO01.ogg");
+	wind = LoadSoundMem("sound/天候・荒野の風.mp3");
+	noise = LoadSoundMem("sound/砂嵐の音・テレビのホワイトノイズ音.mp3");
+	koukaon = LoadSoundMem("sound/small_explosion1.mp3");
+	Gas = LoadSoundMem("sound/ガスが漏れる音loop.mp3");
+	ClearBGM = LoadSoundMem("sound/uchuu-hachimoku.mp3");
+
+
+↑を
+
+
+	OP = IMAGE_SND("sound/この宇宙のどこかで.ogg");
+	Main = IMAGE_SND("sound/星粒が降る夜.mp3");
+	ED1 = IMAGE_SND("sound/遊星.ogg");
+	ED2 = IMAGE_SND("sound/farewell.ogg");
+	LED = IMAGE_SND("sound/世界が僕達に揺れるまで.ogg");
+	Over = IMAGE_SND("sound/宇宙空間.ogg");
+	Result_rank = IMAGE_SND("sound/bomb.mp3");
+	Result_rankAll = IMAGE_SND("sound/destruction1.mp3");
+	Cheers = IMAGE_SND("sound/people_people-stadium-cheer1.mp3");
+	Clap = IMAGE_SND("sound/people_people-stadium-applause1.mp3");
+	Booing = IMAGE_SND("sound/booing.wav");
+	Start = IMAGE_SND("sound/button81.mp3");
+	Decision= IMAGE_SND("sound/button83.mp3");
+	Choose = IMAGE_SND("sound/pon.mp3");
+	Pause = IMAGE_SND("sound/enter16.mp3");
+	PauseBack = IMAGE_SND("sound/cancel7.mp3");
+	Rocket = IMAGE_SND("sound/ロケット噴射.mp3");
+	EngineM = IMAGE_SND("sound/飛行機・小型ジェット機mid.mp3");
+	EngineLand = IMAGE_SND("sound/atmosphere4.mp3");
+	Boost = IMAGE_SND("sound/バックブースター.ogg");
+	fire = IMAGE_SND("sound/ガスバーナー.mp3");
+	Emergency = IMAGE_SND("sound/警報.ogg");
+	Emergency2 = IMAGE_SND("sound/警報03.ogg");
+	Bom = IMAGE_SND("sound/explosion3.ogg");
+	UFO = IMAGE_SND("sound/UFO01.ogg");
+	wind = IMAGE_SND("sound/天候・荒野の風.mp3");
+	noise = IMAGE_SND("sound/砂嵐の音・テレビのホワイトノイズ音.mp3");
+	koukaon = IMAGE_SND("sound/small_explosion1.mp3");
+	Gas = IMAGE_SND("sound/ガスが漏れる音loop.mp3");
+	ClearBGM = IMAGE_SND("sound/uchuu-hachimoku.mp3");
+
+に置き換えて下さい
